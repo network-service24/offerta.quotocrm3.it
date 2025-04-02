@@ -1,0 +1,89 @@
+#bnrcks {
+   font-size: 11px;
+    position: fixed;
+    z-index: 10000000;
+    bottom: 5px;
+    left: 5px;
+    overflow: hidden;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: calc(100% - 10px);
+    max-height: 0;
+    -webkit-transition: all .8s ease;
+    -o-transition: all .8s ease;
+    transition: all .8s ease;
+    color: #fff;
+    background: rgba(237,237,237,.9);
+    font-family: verdana;
+    /* border-top: 1px solid #999; */
+    color: #333;
+    padding: 0px;
+}
+.cntcks {
+    position: relative;
+    float: left;
+    width: calc(100% - 60px);
+    /* padding: 10px; */
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 10px 30px;
+}
+
+.btncks {
+    width: 60px;
+    height: 100% !important;
+    position: absolute;
+    top: 0;
+    right: 0;
+    float: none;
+
+}
+
+.okcks{
+    font-size: 15px;
+    position: relative;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: #fff;
+    border: 0;
+    background: #666;
+    height: 100%;
+    font-weight: 900;
+    transition: all 1s ease;
+}
+.okcks:hover{
+    background-color: #000;
+    transition: all .1s ease;
+}
+.npcks {
+    position: relative;
+    font-weight: bold;
+    display: inline-block;
+    margin: 0 4px;
+    color: #000;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0 !important;
+    font-family: verdana;
+    font-size: 11px;
+}
+
+@media screen and (max-width: 992px) {
+    .cntcks,
+    .btncks {
+        width: 100%;
+    }
+    .btncks {
+        height: auto !important;
+        top: inherit;
+        bottom: 0;
+    }
+    .cntcks {
+        margin-bottom: 45px;
+    }
+}

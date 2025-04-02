@@ -1,0 +1,249 @@
+#bannerC {
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #63d270;
+    z-index: 1000000000;
+    padding: 15px 15px 15px 50px;
+    color: #FFF;
+    -webkit-border-top-left-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    -moz-border-radius-topleft: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    text-align: left;
+    font-size: 15px;
+    box-shadow: -1px 1px 3px #000;
+    font-weight: 300;
+    max-width: 450px;
+    transition: all .3s ease;
+    border-left: 20px solid #FFF;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+#bannerC.close {
+    width: 450px !important;
+    right: -400px;
+    border-left: 0px solid #63d270;
+}
+
+#bannerC.close2 {
+    width: 300px !important;
+    right: -316px !important;
+}
+
+#bannerC .bannerOC {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    /* transform: translateY(-50%); */
+    width: 16px;
+    height: 18px;
+    background-image: url(https://offerta.quotocrm.it/banner/left.png);
+    left: -17px;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    opacity: 0.6;
+    transition: all .3s ease;
+}
+
+#bannerC.close .bannerOC {
+    background-image: none;
+    width: 50px;
+    z-index: 100;
+    left: 0px;
+}
+
+#bannerC:hover .bannerOC {
+    opacity: 1;
+}
+
+#bannerC .icona {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-40%);
+    width: 30px;
+    left: 12px;
+    cursor: pointer;
+}
+
+#bannerC titolo {
+    position: relative;
+    display: block;
+    font-size: 16px;
+    font-weight: 300;
+    text-transform: uppercase;
+    color: #FFF;
+    text-align: left;
+    margin-bottom: 4px;
+}
+
+#bannerC sottotitolo {
+    position: relative;
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #FFF;
+    text-align: left;
+}
+
+#ANTICOVID {
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #63d270;
+    z-index: 1000000000;
+    padding: 15px;
+    color: #FFF;
+    -webkit-border-top-left-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    -moz-border-radius-topleft: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    text-align: right;
+    white-space: nowrap;
+    font-size: 15px;
+    box-shadow: -1px 1px 3px #000;
+    font-weight: 300;
+    cursor: pointer;
+}
+
+#ANTICOVID img {
+    width: 33px;
+    height: auto;
+    vertical-align: middle;
+}
+
+#ANTICOVID a {
+    color: #FFF !important;
+}
+
+.white {
+    text-decoration: none !important;
+    color: #FFF !important;
+}
+
+.blocker {
+    z-index: 1000000000000000000 !important;
+    background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+#ANTICOVIDMOD {
+    padding: 30px;
+}
+
+#ANTICOVIDMOD::after {
+    content: \'\';
+ border-radius: 3px;
+    border: 1px solid #63d270;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 22px);
+    height: calc(100% - 22px);
+    position: absolute;
+}
+
+#ANTICOVIDMOD titolo {
+    font-size: 18px;
+    text-transform: uppercase;
+    font-weight: 400;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#ANTICOVIDMOD sottotitolo {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+#ANTICOVIDMOD pulsante {
+    background-color: #63d270;
+    padding: 10px;
+    clear: both;
+    position: relative;
+    float: left;
+    color: #FFF;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 3px;
+    transition: all .3s ease;
+    z-index: 2;
+}
+
+#ANTICOVIDMOD pulsante a {
+    color: #FFF;
+}
+
+@media screen and (max-width: 576px) {
+    #bannerC {
+        width: calc(100% - 30px);
+        max-width: calc(100% - 30px);
+        top: auto;
+        transform: translateY(0);
+        bottom: 80px;
+        border-radius: 0px !important;
+        border: none !important;
+        padding-right: 50px!important;
+        padding-left: 15px!important;
+        border-right: 20px solid #FFF !important;
+        right: auto !important;
+        left: 0px !important;
+    }
+    #bannerC .bannerOC {
+        left: auto !important;
+        right: -17px !important;
+        background-image: url(https://offerta.quotocrm.it/banner/right.png) !important;
+    }
+    #bannerC .icona {
+        left: auto !important;
+        right: 12px !important;
+    }
+    #bannerC.close {
+        width: 100%;
+        max-width: calc(100% - 30px);
+        right: auto !important;
+        border-right: 0px solid #63d270 !important;
+        left: calc(-100% + 80px) !important;
+        padding-right: 50px !important;
+        padding-left: 15px !important;
+    }
+    #bannerC.close .bannerOC {
+        left: auto !important;
+        right: 0px !important;
+        background-image: none !important;
+    }
+    .modal {
+        max-width: 500px !important;
+    }
+}
+
+.modal a.close-modal {
+    top: 2.5px !important;
+    right: 1.5px !important;
+}
+
+
+/* .modal {
+    max-width: 100% !important;
+} */
+
+.pul_print_top {
+    float: right;
+    margin-top: 40px;
+}
+
+.align_custom {
+    top: 0!important;
+    right: 0!important;
+    bottom: 0!important;
+    left: 0!important;
+}

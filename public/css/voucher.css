@@ -1,0 +1,174 @@
+.card {
+    border-radius: 5px;
+    -webkit-box-shadow: 0 1px 20px 0 rgba(69, 90, 100, 0.08);
+    box-shadow: 0 1px 20px 0 rgba(69, 90, 100, 0.08);
+    border: none;
+    margin-bottom: 10px;
+}
+
+.card {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: .25rem;
+}
+
+.invoice-contact {
+    margin-top: 10px;
+    margin-bottom: 0
+}
+
+.invoice-contact {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin-bottom: 10px;
+    padding-top: 10px;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center
+}
+
+.invoice-table {
+    border-left: 1px solid #fff;
+    padding-left: 10px
+}
+
+.invoice-table td,
+.invoice-table th {
+    border-top: none;
+    padding: 3px 0
+}
+
+.invoice-table>tbody>tr:last-child>td,
+.invoice-table>tfoot>tr:last-child>td {
+    padding-bottom: 0
+}
+
+.invoice-box h1 {
+    font-size: 7rem
+}
+
+.invoice-order {
+    padding-left: 0
+}
+
+.invoice-order th:first-child {
+    padding-left: 0;
+    width: 80px
+}
+
+.invoice-detail-table th:first-child {
+    width: 450px;
+    text-align: left
+}
+
+.invoice-detail-table thead th {
+    text-align: center
+}
+
+.invoice-detail-table td {
+    vertical-align: middle;
+    text-align: center
+}
+
+.invoice-detail-table td:first-child {
+    text-align: left
+}
+
+.invoice-total {
+    background: #f3f3f3;
+    padding: 10px 0
+}
+
+.invoice-total td,
+.invoice-total th {
+    text-align: right
+}
+
+.invoice-total td {
+    padding-left: 10px
+}
+
+.invoive-info {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin-bottom: 10px
+}
+
+.invoive-info h6 {
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #757575
+}
+
+.invoice-total tbody {
+    padding-right: 10px;
+    float: right
+}
+
+.pd50 {
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.pd50top {
+    padding-top: 50px;
+}
+
+.pd50bottom {
+    padding-bottom: 50px;
+}
+
+.pd50r {
+    padding-right: 50px;
+}
+
+.pd50l {
+    padding-left: 50px;
+}
+
+.capad10top {
+    clear: both;
+    padding-top: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.no_border_td {
+    font-size: 14px!important;
+}
+
+.panel-body-warning {
+    font-size: 14px!important;
+}
+
+.t16 {
+    font-size: 16px!important;
+}
+
+.nowrap {
+    white-space: nowrap!important;
+}
+
+.tfooter {
+    font-size: 12px!important;
+}
+
+@media print {
+    .no-print,
+    .no-print * {
+        display: none !important;
+    }
+}
