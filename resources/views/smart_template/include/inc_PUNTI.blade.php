@@ -1,4 +1,4 @@
-@if(!empty(PDI))
+@if(!empty($PuntidiInteresse))
 	<div class="boxquoto" id="punti">
 		<div class="box6">
 			<h3><?=strtoUpper(dizionario('PDI'))?></h3>
@@ -10,7 +10,7 @@
 			$bollino ='<i class="fal fa-map-marker"></i>'; //font awesome di riferimento
 			$oc      ="0";//1 aperto - 0 chiuso
 		?>
-		@include('/smart/include/inc_OC.php'); 
+@include('smart_template/include/inc_OC')
 		<div class="box6 t14 content">
 				<?=$PuntidiInteresse?>
 			<div class="ca10"></div>

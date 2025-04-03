@@ -10,7 +10,7 @@
                   <input type="hidden" name="NumeroPrenotazione" value="<?=$Nprenotazione?>">
                   <input type="hidden" name="user" value="<?=$Cliente?>">
                   <input type="hidden" name="lang" value="<?=$Lingua?>"> 
-                  <input type="hidden" name="idsito" value="<?=$IdSito?>"> 
+                  <input type="hidden" name="idsito" value="<?=$idsito?>"> 
                   <input type="hidden" name="action" value="add_chat">  
                   <input type="submit" class="pulsante m-x-tc"  id="send_msg" value="<?=dizionario('INVIA')?>" />                                                      
 
@@ -79,7 +79,7 @@
 		?>
 	@endif	
 
-	@include('/smart/include/inc_OC.php'); 
+	@include('smart_template/include/inc_OC') 
 	
 
 	<div class="box6 t14 content" id="discussione" >		

@@ -1,6 +1,6 @@
 <div class="boxquoto" id="preno">
     <div class="box6">
-        <h3><?=$PRENOTAOFFERTA?></h3>
+        <h3><?=dizionario('PRENOTA_OFFERTA')?></h3>
     </div>
     <?php
         $box     ='preno'; //ID del box contenitore
@@ -9,7 +9,7 @@
         $bollino ='<i class="fal fa-check"></i>'; //font awesome di riferimento
         $oc      ="1";//1 aperto - 0 chiuso
 	?>
-    @include('/smart/include/inc_OC.php');
+   @include('smart_template/include/inc_OC') 
         <div class="box6 t14 content">
             <div class="m m-x-4 m-m-6 m-s-12">
                 <div class="box6">
@@ -95,14 +95,14 @@
                               <input type="hidden" name="email_utente" value="<?=$Email?>">
                               <input type="hidden" name="nome_utente" value="<?=$Cliente?>">
                               <input type="hidden" name="tipo_richiesta" value="<?=$TipoRichiesta?>">
-                              <input type="hidden" name="id_richiesta" value="<?=$Id?>">
+                              <input type="hidden" name="id_richiesta" value="<?=$id_richiesta?>">
                               <input type="hidden" name="lang" value="<?=$Lingua?>">
                               <input type="hidden" name="ip" value="{{ request()->ip() }}">
                               <input type="hidden" name="agent" value="{{ request()->header('User-Agent') }}">
                               <input type="hidden" name="action" value="send_mail">
                               <div class="ca20"></div>
                               @if($result=='')
-                                @if(check_preno_esiste==0)
+                                @if($check_preno_esiste==0)
                                     <div id="view_form_loading"></div>
                                     <div class="g-recaptcha" data-sitekey="6Lf4WPQUAAAAAMkEu-YZZqebuJwkLa6lEAhkR0kv"></div>
                                     <div class="ca5"></div>

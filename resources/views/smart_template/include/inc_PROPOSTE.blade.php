@@ -47,7 +47,7 @@
 		$bollino ='<i class="fal fa-list-ol"></i>'; //font awesome di riferimento
 		$oc      ="1";//1 aperto - 0 chiuso
 	?>
-	@include('/smart/include/inc_OC.php'); 
+@include('smart_template/include/inc_OC')
 	<div class="m m-x-12 content">
 		<div class="m m-x-12 bcolor m-x-h100 tabcontent">
 		<!--TAB PROPOSTE-->		

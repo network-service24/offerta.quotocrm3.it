@@ -1,3 +1,4 @@
+<?php header("Content-type: text/css");?>
 /*
 * font-family: 'Open Sans', sans-serif 
 */
@@ -3025,3 +3026,4 @@ footer {
 }
 
 @media screen and (max-width: 576px) {}
+

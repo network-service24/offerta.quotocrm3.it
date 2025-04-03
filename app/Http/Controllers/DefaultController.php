@@ -431,10 +431,10 @@ class DefaultController extends Controller
                     $lista_servizi_aggiuntivi .= ' <td style="width:25%"  class="panel-body-warning border_td_white text-center">';
                     if ($campo->CalcoloPrezzo == 'A percentuale' && $campo->PercentualeServizio != '') {
                         $lista_servizi_aggiuntivi .= '   <div id="contenitore_switchery' . $campo->Id . '" class="nowrap">
-                                        ' . ($campo->Obbligatorio == 1 ? $obbligatory . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : ($IdServizio[$campo->Id] == 1 ? '<small>(' . $IMPOSTO . ')</small>' . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : '<input type="checkbox" class="PrezzoServizio' . $n . '"  id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PercentualeServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '"  ' . ($IdServizio[$campo->Id] == 1 ? 'checked="checked"' : '') . '>'));
+                                        ' . ($campo->Obbligatorio == 1 ? $obbligatory . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : (($IdServizio[$campo->Id] ?? null) == 1? '<small>(' . $IMPOSTO . ')</small>' . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : '<input type="checkbox" class="PrezzoServizio' . $n . '"  id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PercentualeServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '"  ' . ($IdServizio[$campo->Id] == 1 ? 'checked="checked"' : '') . '>'));
                     } else {
                         $lista_servizi_aggiuntivi .= '   <div id="contenitore_switchery' . $campo->Id . '" class="nowrap">
-                                        ' . ($campo->Obbligatorio == 1 ? $obbligatory : ($IdServizio[$campo->Id] == 1 ? '<small>(' . $IMPOSTO . ')</small>' : '<input type="checkbox" class="PrezzoServizio' . $n . '" id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PrezzoServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '" ' . ($campo->Obbligatorio == 1 ? 'disabled="disabled"' : '') . ' ' . ($IdServizio[$campo->Id] == 1 ? 'checked="checked"' : '') . '>'));
+                                        ' . ($campo->Obbligatorio == 1 ? $obbligatory : (($IdServizio[$campo->Id] ?? null) == 1? '<small>(' . $IMPOSTO . ')</small>' : '<input type="checkbox" class="PrezzoServizio' . $n . '" id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PrezzoServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '" ' . ($campo->Obbligatorio == 1 ? 'disabled="disabled"' : '') . ' ' . (($IdServizio[$campo->Id] ?? null) == 1 ? 'checked="checked"' : '') . '>'));
                     }
                     $lista_servizi_aggiuntivi .= ' <td style="width:10%"  class="panel-body-warning border_td_white">' . ($recrel->num_notti != 0 || ! is_null($recrel->num_notti) || ! empty($recrel->num_notti) ? '<input type="hidden" name="notti' . $n . '_' . $campo->Id . '" id="notti' . $n . '_' . $campo->Id . '" data-tipo="notti' . $n . '_' . $campo->Id . '" value="' . $recrel->num_notti . '">' : '') . ($recrel->num_persone != 0 || ! is_null($recrel->num_persone) || ! empty($recrel->num_persone) ? '<input type="hidden" name="num_persone_' . $n . '_' . $campo->Id . '" id="num_persone' . $n . '_' . $campo->Id . '" data-tipo="persone' . $n . '_' . $campo->Id . '" value="' . $recrel->num_persone . '" />' : '') . '<div id="valori_serv_' . $n . '_' . $campo->Id . '" class="nowrap" style="font-size:75%"></div><div id="pulsante_calcola_' . $n . '_' . $campo->Id . '" class="nowrap" style="font-size:75%"></div><div id="spiegazione_prezzo_servizio_' . $n . '_' . $campo->Id . '" class="nowrap" style="font-size:75%"></div></div></td>';
                     $lista_servizi_aggiuntivi .= ' <td style="width:10%;white-space: nowrap;"  class="panel-body-warning border_td_white text-right"><div id="Prezzo_Servizio_' . $n . '_' . $campo->Id . '">' . $PrezzoServizio . '</div><input type="hidden" id="RecPrezzo_Servizio_' . $n . '_' . $campo->Id . '" name="RecPrezzo_Servizio_' . $n . '_' . $campo->Id . '"></td>
@@ -2803,7 +2803,6 @@ class DefaultController extends Controller
                                     AND hospitality_tipo_camere.Abilitato = :Abilitato
                                     AND hospitality_tipo_soggiorno_lingua.lingue = :Lingua2
                                     AND hospitality_tipo_soggiorno.Abilitato = :Abilitato2 
-
                                     ORDER BY hospitality_richiesta.Id ASC" ;
                     $result2 = DB::select($select2,[
                                                         'idsito'  => $idsito,
@@ -3147,19 +3146,19 @@ class DefaultController extends Controller
                             $ese   = DB::select($quy,['NumeroPrenotazione' => $Nprenotazione,'idsito' => $idsito,'TipoRichiesta' => 'Preventivo']);                
                             $exist = sizeof($ese);
 
-                        if($exist>0){
-                            $cc    = $ese[0];
+                            if($exist>0){
+                                $cc    = $ese[0];
 
-                            $qry = "SELECT hospitality_relazione_servizi_proposte.servizio_id FROM hospitality_relazione_servizi_proposte WHERE id_richiesta = :id_richiesta AND idsito = :idsito";
-                            $exe = DB::select($qry,['id_richiesta' => $cc->Id,'idsito' => $idsito]);
-                            $relexist = sizeof($exe);
-                            $IdServizioScelto = array();
-                            if($relexist>0){
-                                foreach($exe as $ky => $vl){
-                                    $IdServizioScelto[$vl->servizio_id]=1;
+                                $qry = "SELECT hospitality_relazione_servizi_proposte.servizio_id FROM hospitality_relazione_servizi_proposte WHERE id_richiesta = :id_richiesta AND idsito = :idsito";
+                                $exe = DB::select($qry,['id_richiesta' => $cc->Id,'idsito' => $idsito]);
+                                $relexist = sizeof($exe);
+                                $IdServizioScelto = array();
+                                if($relexist>0){
+                                    foreach($exe as $ky => $vl){
+                                        $IdServizioScelto[$vl->servizio_id]=1;
+                                    }
                                 }
                             }
-                        }
                             ### FINE CONTROLLO
                             $SERVIZIAGGIUNTIVI .='<style>
                                                     .iconaDimension {
@@ -3269,7 +3268,7 @@ class DefaultController extends Controller
 
                         $ck_serv = $this->check_controllo_servizi($idsito);
                         if($ck_serv == 1){
-                            $SERVIZIAGGIUNTIVI  = $this->get_modifica_servizi_aggiuntivi($n,$Id,$IdProposta ,$Lingua);
+                            $SERVIZIAGGIUNTIVI  = $this->get_modifica_servizi_aggiuntivi($n,$Id,$IdProposta,$Lingua);
                         }else{
 
                             // Query per servizi aggiuntivi

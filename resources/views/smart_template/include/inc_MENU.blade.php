@@ -7,7 +7,7 @@
 		@if(!empty($Eventi))
 				<div class="vm" section="eventi"><?=dizionario('EVENTI')?></div>
 		@endif
-        @if(!empty($PDI))
+        @if(!empty($PuntidiInteresse))
 	            <div class="vm" section="punti"><?=dizionario('PDI')?></div>
 		@endif       				
 		@if($TipoRichiesta == 'Conferma')
@@ -36,7 +36,7 @@
 		@if(!empty($Eventi))
 			<div class="vmb" section="eventi"><?=dizionario('EVENTI')?></div>
 		@endif
-		@if(!empty($PDI))
+		@if(!empty($PuntidiInteresse))
 	        <div class="vmb" section="punti"><?=dizionario('PDI')?></div>
 		@endif
 		@if($TipoRichiesta == 'Conferma')

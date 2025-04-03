@@ -10,7 +10,7 @@
 		$bollino ='<i class="fal fa-info-circle"></i>'; //font awesome di riferimento
 		$oc      ="0";//1 aperto - 0 chiuso
 	?>
-	@include('/smart/include/inc_OC.php'); 
+	@include('smart_template/include/inc_OC')
 	<div class="box6 t14 content">
 		<?=$infohotelTesto?>
 		<div class="ca20"></div>

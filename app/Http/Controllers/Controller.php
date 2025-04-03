@@ -2340,6 +2340,7 @@ class Controller extends BaseController
        $select = "SELECT * FROM hospitality_guest WHERE NumeroPrenotazione = :NumeroPrenotazione AND idsito = :idsito AND TipoRichiesta = :TipoRichiesta";
        $ris    = DB::select($select, ['NumeroPrenotazione' => $NumeroPrenotazione, 'idsito' => $idsito, 'TipoRichiesta' => 'Conferma']);
        $check  = sizeof($ris);
+
        return $check;
    }
 

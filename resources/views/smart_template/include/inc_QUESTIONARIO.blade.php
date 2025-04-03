@@ -10,7 +10,7 @@
         $bollino ='<i class="fal fa-check"></i>'; //font awesome di riferimento
         $oc      ="1";//1 aperto - 0 chiuso
 	?>
-    @include('/smart/include/inc_OC.php'); 
+    @include('smart_template/include/inc_OC') 
         <div class="box6 t14 content">
             <div class="m m-x-12 m-m-12 m-s-12 m-s-ha">
                 <div class="box6">
