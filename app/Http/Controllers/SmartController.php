@@ -1403,12 +1403,12 @@ class SmartController extends Controller
                     $lon = '';
                 }
                 $coord       = $this->coordinateCliente($idsito);
-                $array_coord = explode("#",$coord);
+                $array_coord = explode("#", $coord);
                 $LatCliente  = $array_coord[1];
                 $LonCliente  = $array_coord[0];
                 // calcolo la distanza
                 $distanzaE = $this->calcola_distanza($LatCliente, $LonCliente, $lat, $lon);
-                $distanceE = '';
+
                 foreach ($distanzaE as $unita => $valore) {
                     $distanceE = $unita . ': ' . (number_format($valore, 2, ',', '.')) . '<br/>';
                 }
@@ -2444,6 +2444,9 @@ class SmartController extends Controller
                 $DataS_tmp                = explode("-",$value->DataScadenza);
                 $DataScadenza             = $DataS_tmp[2].'/'.$DataS_tmp[1].'/'.$DataS_tmp[0];
                 $DataScadenza_estesa = $DataS_tmp[2].' '.$mesi[$Lingua][$DataS_tmp[1]].' '.$DataS_tmp[0];
+            }else{
+                $DataScadenza        = '';
+                $DataScadenza_estesa = '';
             }
             $EtaBambini1              = $value->EtaBambini1;
             $EtaBambini2              = $value->EtaBambini2;
@@ -2887,9 +2890,9 @@ class SmartController extends Controller
                         $totale_tmp      = ($val->NumeroCamere*$val->Prezzo);
                         $totale          = ($totale_tmp + $totale);
 
-                        $FCamere .= $val->TitoloSoggiorno.' - Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?'A.'.$NumAdulti:'').' '.($NumBambini!=0?'B.'.$NumBambini:'').' '.($EtaB!=''?'<small>'.dizionario('ETA').' '.$EtaB.'</small>':''):'').'- €. '.number_format($val->Prezzo,2,',','.').' - ';
+                        $FCamere .= $val->TitoloSoggiorno.' - Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?'A.'.$NumAdulti:'').' '.($NumBambini!=0?'B.'.$NumBambini:'').' '.($EtaB!='' && $EtaB!=0?'<small>'.dizionario('ETA').' '.$EtaB.'</small>':''):'').'- €. '.number_format($val->Prezzo,2,',','.').' - ';
 
-                        $VAUCHERCamere .= '<p>'.$val->TitoloSoggiorno.' <i class=\'fa fa-angle-right\'></i> Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!=''?''.dizionario('ETA').' '.$EtaB.' ':''):'').' - €. '.number_format($val->Prezzo,2,',','.').'</p>';
+                        $VAUCHERCamere .= '<p>'.$val->TitoloSoggiorno.' <i class=\'fa fa-angle-right\'></i> Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!='' && $EtaB!=0?''.dizionario('ETA').' '.$EtaB.' ':''):'').' - €. '.number_format($val->Prezzo,2,',','.').'</p>';
 
                         if($Servizi != ''){
 
@@ -2973,7 +2976,7 @@ class SmartController extends Controller
                                         </div>
                                         <div class="m m-x-3 m-x-tc">
                                             <div class="box6">
-                                                '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?'<span data-toggle="tooltip" data-placement="right" data-html="true" title="'.($NumAdulti!=0?dizionario('ADULTI').' <b>'.$NumAdulti.'</b>':'').' <br>'.($NumBambini!=0?dizionario('BAMBINI').' <b>' .$NumBambini.'</b>':'').'">'.($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!=''?''.dizionario('ETA').' '.$EtaB.'':'').'</span>':'').'
+                                                '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2') ?'<span data-toggle="tooltip" data-placement="right" data-html="true" title="'.($NumAdulti!=0?dizionario('ADULTI').' <b>'.$NumAdulti.'</b>':'').' <br>'.($NumBambini!=0?dizionario('BAMBINI').' <b>' .$NumBambini.'</b>':'').'">'.($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!='' && $EtaB!=0?''.dizionario('ETA').' '.$EtaB.'':'').'</span>':'').'
                                             </div>
                                         </div>
                                         <div class="m m-x-3 m-x-tc">
@@ -3084,7 +3087,7 @@ class SmartController extends Controller
         }
         $proposta_specchietto .='<linea class="twhite">'.$eti1fa.$eti1.'<div class="w300 t18">'.$DataArrivo_estesa.'</div></linea>
                                 <linea class="twhite">'.$eti2fa.$eti2.'<div class="w300 t18">'.$DataPartenza_estesa.'</div></linea>
-                                <linea class="twhite">'.$eti3fa.$eti3.'<div class="w300 t18">'.dizionario('ADULTI').' '.$NumeroAdulti .' '.($NumeroBambini!='0'?' - '.dizionario('BAMBINI').' '.$NumeroBambini .' '.($EtaBambini1!='' && $EtaBambini1!='0'?'<br>'.$EtaBambini1.' '.dizionario('ANNI').' ':'').($EtaBambini2!='' && $EtaBambini2!='0'?' - '.$EtaBambini2.' '.dizionario('ANNI').' ':'').($EtaBambini3!='' && $EtaBambini3!='0'?' - '.$EtaBambini3.' '.dizionario('ANNI').' ':'').($EtaBambini4!='' && $EtaBambini4!='0'?' - '.$EtaBambini4.' '.dizionario('ANNI').' ':'').($EtaBambini5!='' && $EtaBambini5!='0'?' - '.$EtaBambini5.' '.dizionario('ANNI').' ':'').($EtaBambini6!='' && $EtaBambini6!='0'?' - '.$EtaBambini6.' '.dizionario('ANNI').' ':'').' '.($EtaB!=''?''.dizionario('ETA').': '.$EtaB.'':''):'').'<br>'.dizionario('NOTTI').' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2')?($ANotti!=''?$ANotti:$Notti):$Notti).'</div></linea>
+                                <linea class="twhite">'.$eti3fa.$eti3.'<div class="w300 t18">'.dizionario('ADULTI').' '.$NumeroAdulti .' '.($NumeroBambini!='0'?' - '.dizionario('BAMBINI').' '.$NumeroBambini .' '.($EtaBambini1!='' && $EtaBambini1!='0'?'<br>'.$EtaBambini1.' '.dizionario('ANNI').' ':'').($EtaBambini2!='' && $EtaBambini2!='0'?' - '.$EtaBambini2.' '.dizionario('ANNI').' ':'').($EtaBambini3!='' && $EtaBambini3!='0'?' - '.$EtaBambini3.' '.dizionario('ANNI').' ':'').($EtaBambini4!='' && $EtaBambini4!='0'?' - '.$EtaBambini4.' '.dizionario('ANNI').' ':'').($EtaBambini5!='' && $EtaBambini5!='0'?' - '.$EtaBambini5.' '.dizionario('ANNI').' ':'').($EtaBambini6!='' && $EtaBambini6!='0'?' - '.$EtaBambini6.' '.dizionario('ANNI').' ':'').' '.($EtaB!='' && $EtaB!=0?''.dizionario('ETA').': '.$EtaB.'':''):'').'<br>'.dizionario('NOTTI').' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2')?($ANotti!=''?$ANotti:$Notti):$Notti).'</div></linea>
                                 <linea class="twhite">'.$eti4fa.$eti4.'<div class="w300 t18">'.$Nomi_camera.'</div></linea>
                                 <linea class="twhite">'.$eti5fa.$eti5.'<div class="w300 t18">'.$TitoloSoggiorno.'</div></linea>
                                 <linea class="twhite">'.$eti6fa.$eti6.'<div class="w300 t12">'.dizionario('SCADENZA').' '.$DataScadenza_estesa.'</div>
@@ -3176,7 +3179,7 @@ class SmartController extends Controller
         }
         $proposta_form .='     <linea class="twhite">'.$eti1fa.$eti1.'<div class="w300 t18">'.$DataArrivo_estesa.'</div></linea>
                                 <linea class="twhite">'.$eti2fa.$eti2.'<div class="w300 t18">'.$DataPartenza_estesa.'</div></linea>
-                                <linea class="twhite">'.$eti3fa.$eti3.'<div class="w300 t18">'.dizionario('ADULTI').' '.$NumeroAdulti .' '.($NumeroBambini!='0'?' - '.dizionario('BAMBINI').' '.$NumeroBambini .' '.($EtaBambini1!='' && $EtaBambini1!='0'?'<br>'.$EtaBambini1.' '.dizionario('ANNI').' ':'').($EtaBambini2!='' && $EtaBambini2!='0'?' - '.$EtaBambini2.' '.dizionario('ANNI').' ':'').($EtaBambini3!='' && $EtaBambini3!='0'?' - '.$EtaBambini3.' '.dizionario('ANNI').' ':'').($EtaBambini4!='' && $EtaBambini4!='0'?' - '.$EtaBambini4.' '.dizionario('ANNI').' ':'').($EtaBambini5!='' && $EtaBambini5!='0'?' - '.$EtaBambini5.' '.dizionario('ANNI').' ':'').($EtaBambini6!='' && $EtaBambini6!='0'?' - '.$EtaBambini6.' '.dizionario('ANNI').' ':'').' '.($EtaB!=''?''.dizionario('ETA').': '.$EtaB.'':''):'').'<br>'.dizionario('NOTTI').' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2')?($ANotti!=''?$ANotti:$Notti):$Notti).'</div></linea>
+                                <linea class="twhite">'.$eti3fa.$eti3.'<div class="w300 t18">'.dizionario('ADULTI').' '.$NumeroAdulti .' '.($NumeroBambini!='0'?' - '.dizionario('BAMBINI').' '.$NumeroBambini .' '.($EtaBambini1!='' && $EtaBambini1!='0'?'<br>'.$EtaBambini1.' '.dizionario('ANNI').' ':'').($EtaBambini2!='' && $EtaBambini2!='0'?' - '.$EtaBambini2.' '.dizionario('ANNI').' ':'').($EtaBambini3!='' && $EtaBambini3!='0'?' - '.$EtaBambini3.' '.dizionario('ANNI').' ':'').($EtaBambini4!='' && $EtaBambini4!='0'?' - '.$EtaBambini4.' '.dizionario('ANNI').' ':'').($EtaBambini5!='' && $EtaBambini5!='0'?' - '.$EtaBambini5.' '.dizionario('ANNI').' ':'').($EtaBambini6!='' && $EtaBambini6!='0'?' - '.$EtaBambini6.' '.dizionario('ANNI').' ':'').' '.($EtaB!='' && $EtaB!=0?''.dizionario('ETA').': '.$EtaB.'':''):'').'<br>'.dizionario('NOTTI').' '.($DataRichiestaCheck > config('global.settings.DATA_QUOTO_V2')?($ANotti!=''?$ANotti:$Notti):$Notti).'</div></linea>
                                 <linea class="twhite">'.$eti4fa.$eti4.'<div class="w300 t18">'.$Nomi_camera.'</div></linea>
                                 <linea class="twhite">'.$eti5fa.$eti5.'<div class="w300 t18">'.$TitoloSoggiorno.'</div></linea>
                                 <linea class="twhite">'.$eti6fa.$eti6.'<div class="w300 t12">'.dizionario('SCADENZA').' '.$DataScadenza_estesa.'</div>
@@ -3666,4 +3669,252 @@ class SmartController extends Controller
         );
 
     }
+
+
+    public function questionario($directory, $params, Request $request)
+    {
+        // Decodifica il parametro params per sicurezza
+        $decodedParams = base64_decode($params);
+        // Verifica che la stringa sia valida
+        if (! $decodedParams || ! str_contains($decodedParams, '_')) {
+            abort(404, "Formato URL non valido!!");
+        }
+        // Suddivisione dei parametri separati da "_"
+        $parts = explode('_', $decodedParams);
+
+        // Controllo per evitare errori se i parametri non sono nel formato corretto
+        if (count($parts) !== 3) {
+            abort(404, "Formato URL non valido!!");
+        }
+
+        list($id_richiesta, $idsito, $tipo) = $parts;
+    
+        $select = "SELECT hospitality_guest.*
+                FROM hospitality_guest
+                WHERE hospitality_guest.idsito = :idsito
+                AND hospitality_guest.Id = :id_richiesta";
+        $sel  = DB::select($select,['idsito' => $idsito, 'id_richiesta' => $id_richiesta]);
+        $res = sizeof($sel);
+        if(($res)>0){
+            $rec     = $sel[0];
+            $Lingua  = $rec->Lingua;
+            $Nome    = $rec->Nome;
+            $Cognome = $rec->Cognome;
+            $Email   = $rec->Email;
+            $Cliente = $Nome.' '.$Cognome;
+        }
+
+        $valori_ctrl_script = '';
+        $question           = '';
+        ###QUESTIONARIO###
+        $questionario = "SELECT hospitality_domande_lingua.domanda,hospitality_domande_lingua.domanda_id
+                            FROM hospitality_domande
+                            INNER JOIN hospitality_domande_lingua ON hospitality_domande_lingua.domanda_id = hospitality_domande.Id
+                            WHERE hospitality_domande.idsito = :idsito
+                            AND hospitality_domande_lingua.lingue = :Lingua
+                            AND hospitality_domande.Abilitato = :Abilitato
+                            ORDER BY hospitality_domande.Ordine ASC";
+        $res_quest = DB::select($questionario,['idsito' => $idsito, 'Lingua' => $Lingua, 'Abilitato' => 1]);
+        $tot_quest = sizeof($res_quest);
+            if($tot_quest > 0){
+                foreach($res_quest as $key => $record){
+
+                    $valori_ctrl_script .= 'var checked_recensione_'.$record->domanda_id.' = document.querySelector(\'input[name = "recensione_'.$record->domanda_id.'"]:checked\')'."\r\n";
+                    $valori_ctrl_script .= 'if(checked_recensione_'.$record->domanda_id.' == null)   error += "Scegli un valore per: '.$record->domanda.'. \n"'."\r\n";
+
+                    $question .=' <div class="row">
+                                        <div class="col-md-4" style="white-space:nowrap">
+                                        <h3 class="maiuscolo">'.$record->domanda.'</h3>
+                                        <input type="hidden" name="id_domanda_'.$record->domanda_id.'" value="'.$record->domanda_id.'">
+                                        </div>
+                                        <div class="col-md-8 text-right" style="padding-top:10px!important">
+                                        <table style="float:right;">
+                                            <tr>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><input type="radio" name="recensione_'.$record->domanda_id.'" value="1" required></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><input type="radio" name="recensione_'.$record->domanda_id.'" value="2" required></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><input type="radio" name="recensione_'.$record->domanda_id.'" value="3" required></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><input type="radio" name="recensione_'.$record->domanda_id.'" value="4" required></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><input type="radio" name="recensione_'.$record->domanda_id.'" value="5" required></td>
+                                            </tr>
+                                            <tr>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><img src="'.config('global.settings.BASE_URL_IMG').'img/emoji/bad.png"  data-toogle="tooltip" title="Bad [valore = 1]"></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><img src="'.config('global.settings.BASE_URL_IMG').'img/emoji/semi_bad.png" data-toogle="tooltip" title="Semi Bad [valore = 2]"></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><img src="'.config('global.settings.BASE_URL_IMG').'img/emoji/medium.png"  data-toogle="tooltip" title="Medium [valore = 3]"></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><img src="'.config('global.settings.BASE_URL_IMG').'img/emoji/semi_good.png"  data-toogle="tooltip" title="Semi Good [valore = 4]"></td>
+                                            <td style="padding: 0 5px 0 5px !important;text-align: center !important;"><img src="'.config('global.settings.BASE_URL_IMG').'img/emoji/good.png"  data-toogle="tooltip" title="Good [valore = 5]"></td>                                   
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                        <div class="col-md-12">
+                                        <textarea class="input_ground" name="risposta_'.$record->domanda_id.'" style="width:100%;height:80px;padding:10px" placeholder="'.dizionario('LASCIA_COMMENTO').'"></textarea>
+                                        </div>
+                                </div>';
+                }
+
+            }
+
+            $rw = $this->social($idsito);
+            if($rw->Facebook!=''){
+                $Facebook   = '<a  href="'.$rw->Facebook.'" target="_blank"><i class="fab fa-facebook-square fa-2x"></i></a>';
+            }else{
+                $Facebook   = '';
+            }
+            if($rw->Twitter!=''){
+                $Twitter    = '<a  href="'.$rw->Twitter.'" target="_blank"><img src="/img/x-twitter.png" style="margin-top:-18px"></a>';
+            }else{
+                $Twitter   = '';
+            }
+            if($rw->GooglePlus!=''){
+                $GooglePlus    = '<a  href="'.$rw->GooglePlus.'" target="_blank"><i class="fab fa-google-plus-square fa-2x"></i></a>';
+            }else{
+                $GooglePlus   = '';
+            }
+            if($rw->Instagram!=''){
+                $Instagram    = '<a  href="'.$rw->Instagram.'" target="_blank"><i class="fab fa-instagram fa-2x"></i></a>';
+            }else{
+                $Instagram   = '';
+            }
+            if($rw->Linkedin!=''){
+                $Linkedin    = '<a  href="'.$rw->Linkedin.'" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a>' ;
+            }else{
+                $Linkedin   = '';
+            }
+            if($rw->Pinterest!=''){
+                $Pinterest    = '<a  href="'.$rw->Pinterest.'" target="_blank"><i class="fab fa-pinterest-square fa-2x"></i></a>' ;
+            }else{
+                $Pinterest   = '';
+            }
+
+            $row = $this->getCliente($idsito);
+     
+            $NomeCliente         = $row->nome;
+            $EmailCliente        = $row->email;
+            $Indirizzo           = $row->indirizzo;
+            $Localita            = $row->nome_comune;
+            $Cap                 = $row->cap;
+            $CIR                 = $row->CIR;
+            $CIN                 = $row->CIN;
+            if(strstr($row->tel,'+39') || strstr($row->tel,'0039')){
+                $tel             = $row->tel;
+            }else{
+                $tel             = '+39 '.$row->tel;
+            }
+            $Provincia           = $row->sigla_provincia;
+            $SitoWeb             = 'https://'.$row->web;
+            $Logo                = $row->logo;
+            $TagManager          = $row->TagManager;
+
+            $cs = "SELECT * FROM hospitality_customer_satisfaction WHERE id_richiesta = :id_richiesta AND data_compilazione != :data_compilazione ";
+            $res_cs = db::select($cs,['id_richiesta' => $id_richiesta, 'data_compilazione' => '']);
+            $tot_cs = sizeof($res_cs);
+
+
+            $codeTagMan = $this->tagManager($idsito,$TagManager);
+            $head_tagmanager = $codeTagMan[0];
+            $body_tagmanager = $codeTagMan[1];
+
+
+            $sel_color = "SELECT * FROM hospitality_template_background WHERE idsito = :idsito AND TemplateName = :TemplateName LIMIT 1";
+            $res_color = DB::select($sel_color,['idsito' => $idsito, 'TemplateName' => 'smart']);
+            $rCol      = $res_color[0];
+            $colore1   = $rCol->Background;
+            $colore2   = $rCol->Pulsante;
+            $font      = $rCol->Font;
+            switch($font){
+                case "'Lato', sans-serif";
+                    $font_libreria = 'Lato:100,100i,300,300i,400,400i,700,700i,900,900i';
+                break;
+                case "'Lora', serif";
+                    $font_libreria = 'Lora:400,400i,700,700i"';
+                break;
+                case "'Open Sans', sans-serif";
+                    $font_libreria = 'Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i';
+                break;
+                case "'Playfair Display', serif";
+                    $font_libreria = 'Playfair+Display:400,400i,700,700i,900,900i';
+                break;
+                case "'Raleway', sans-serif";
+                    $font_libreria = 'Raleway';
+                break;
+                case "'Roboto', sans-serif";
+                    $font_libreria = 'Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i';
+                break;
+                case "'Roboto Slab', serif";
+                    $font_libreria = 'Roboto+Slab:100,300,400,700';
+                break;
+                case "'Ubuntu', sans-serif";
+                    $font_libreria = 'Ubuntu:300,300i,400,400i,500,500i,700,700i';
+                break;
+                case "'Montserrat', sans-serif";
+                    $font_libreria = 'Montserrat:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i';
+                break;
+            }
+
+            $logo                =($Logo ==''?'<i class="fas fa-bed fa-5x fa-fw"></i>':'<img src="'.config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$Logo.'" class="logo">');
+            $logotitle           = $NomeCliente;
+            $intestazionemobile1 = $NomeCliente;
+            $intestazionemobile2 = $Localita;
+            $coloresfondo        ="#A4A4A4";//colore di sfondo della pagina
+
+
+
+
+
+
+            return view('smart_template/questionario',
+                                                            [
+                                                                'valori_ctrl_script'  => $valori_ctrl_script,
+                                                                'question'            => $question,
+                                                                'Indirizzo'           => $Indirizzo,
+                                                                'Localita'            => $Localita,
+                                                                'Provincia'           => $Provincia,
+                                                                'Cap'                 => $Cap,
+                                                                'CIR'                 => $CIR,
+                                                                'CIN'                 => $CIN,
+                                                                'SitoWeb'             => $SitoWeb,
+                                                                'Logo'                => $Logo,
+                                                                'EmailCliente'        => $EmailCliente,
+                                                                'NomeCliente'         => $NomeCliente,
+                                                                'Cliente'             => $Cliente,
+                                                                'Email'               => $Email,
+                                                                'Nome'                => $Nome,
+                                                                'Cognome'             => $Cognome,
+                                                                'Facebook'            => $Facebook,
+                                                                'Twitter'             => $Twitter,
+                                                                'GooglePlus'          => $GooglePlus,
+                                                                'Instagram'           => $Instagram,
+                                                                'Linkedin'            => $Linkedin,
+                                                                'Pinterest'           => $Pinterest,
+                                                                'tot_cs'              => $tot_cs,
+                                                                'Lingua'              => $Lingua,
+                                                                'head_tagmanager'     => $head_tagmanager,
+                                                                'body_tagmanager'     => $body_tagmanager,
+                                                                'directory'           => $directory,
+                                                                'params'              => $params,
+                                                                'idsito'              => $idsito,
+                                                                'id_richiesta'        => $id_richiesta,
+                                                                'colore1'             => $colore1,
+                                                                'colore2'             => $colore2,
+                                                                'font'                => $font,
+                                                                'font_libreria'       => $font_libreria,               
+                                                                'coloresfondo'        => $coloresfondo,
+                                                                'logo'                => $logo,
+                                                                'logotitle'           => $logotitle,
+                                                                'intestazionemobile1' => $intestazionemobile1,
+                                                                'intestazionemobile2' => $intestazionemobile2,
+                                                                'telefono'            => $tel,
+                                                            ]
+                                                        );
+    }
+
+
+
+
+
+
+
+
+
 }

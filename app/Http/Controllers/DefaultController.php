@@ -810,7 +810,7 @@ class DefaultController extends Controller
                 $LonCliente  = $array_coord[0];
                 // calcolo la distanza
                 $distanzaE = $this->calcola_distanza($LatCliente, $LonCliente, $lat, $lon);
-                $distanceE = '';
+
                 foreach ($distanzaE as $unita => $valore) {
                     $distanceE = $unita . ': ' . (number_format($valore, 2, ',', '.')) . '<br/>';
                 }

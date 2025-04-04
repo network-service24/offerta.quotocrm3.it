@@ -302,7 +302,7 @@
              @endif
            
             <?
-              if(substr($_SERVER['REQUEST_URI'],-5)=='chat/'){
+              if (request()->is('*/chat')){
                 $stile='style="display:none"';
               }else{
                     if($TipoRichiesta == 'Conferma'){
@@ -509,7 +509,7 @@
                 <!-- form chat -->
                 <div id="ancor_chat"></div>
                 <div id="contenitore_chat" <?=($DataScadenza < date('Y-m-d')?'style="position:relative!important;z-index:999999!important;"':'')?>>
-                <div class="thumbnail caption" id="chat" <?=(substr($_SERVER['REQUEST_URI'],-5)=='chat/'?'':'style="display:none"')?>>
+                <div class="thumbnail caption" id="chat" <?=(request()->is('*/chat') ? '' : 'style="display:none"')?>>
                 <div class="row">
                             <div class="col-md-12">
                                   <div class="caption-full">

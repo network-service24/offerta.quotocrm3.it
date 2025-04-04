@@ -16,9 +16,9 @@
                 <div class="box6">
                       <span class="t25"><?=str_replace("[cliente]",($Nome.' '.$Cognome),dizionario('TESTO_QUESTIONARIO'))?></span>
                       <div class="ca50"></div>
-                        <? if($tot_cs > 0){?>
+                        @if($tot_cs > 0)
                               <span class="t30"><?=dizionario('NO_QUESTIONARIO')?></span>
-                        <?}else{?>
+                        @else
                             <p>
                             LEGENDA:    <img src="https://www.quotocrm.it/img/emoji/bad.png" style="width:20px;height:20px" data-toogle="tooltip" title="Bad [valore = 1]">(1)
                                         <img src="https://www.quotocrm.it/img/emoji/semi_bad.png" style="width:20px;height:20px" data-toogle="tooltip" title="Semi Bad  [valore = 2]">(2)
@@ -28,20 +28,45 @@
 
                           </p>
                           <div class="ca50"></div>
-                           <form id="form_quest" name="form_quest" method="post" action="/save_questionario" onsubmit="return controlla();">                                           
+                           <form id="form_quest" name="form_quest" method="post" onsubmit="return controlla();">                                           
                              <?=$question?>
                              <div class="ca20"></div>
                                      <input type="hidden" name="email_hotel" value="<?=$EmailCliente?>">
                                     <input type="hidden" name="nome_hotel" value="<?=$NomeCliente?>"> 
                                     <input type="hidden" name="email_utente" value="<?=$Email?>">
                                     <input type="hidden" name="nome_utente" value="<?=$Cliente?>">
-                                    <input type="hidden" name="id_richiesta" value="<?=$Id?>">
+                                    <input type="hidden" name="id_richiesta" value="<?=$id_richiesta?>">
                                     <input type="hidden" name="idsito" value="<?=$idsito?>"> 
+                                    <input type="hidden" name="Lingua" value="<?=$Lingua?>"> 
                                     <input type="hidden" name="data_compilazione" value="<?=date('Y-m-d')?>">
-                                    <input type="hidden" name="action" value="send_quest">                                                             
+                                    <input type="hidden" name="action" value="send_quest">                                                          
                                     <button type="submit" class="pulsante" id="send_msg"><?=dizionario('INVIA_GIUDIZI')?> <i class="fa fa-angle-double-right"></i></button>                      
-                          </form> 
-                      <?}?>
+                            </form> 
+                            <script>
+                                $(document).ready(function() {
+                                    $("#form_quest").submit(function () {   
+                                        var  dati   = $("#form_quest").serialize(); 
+                                        $.ajaxSetup({
+                                            headers: {
+                                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                            }
+                                        });
+                                        $.ajax({
+                                            url: "/save_questionario",
+                                            type: "POST",
+                                            data: dati,
+                                            success: function(response) {
+                                                _alert("OK!","<?php echo dizionario('THANKS_QUESTIONARIO')?>");
+                                                setTimeout(function() { 
+                                                    window.location.href = "<?php echo $SitoWeb?>";
+                                                }, 2000);                 
+                                            }
+                                        });
+                                        return false;                                     
+                                    });
+                                });
+                            </script>
+                         @endif 
 
                   </div>
                 </div>

@@ -1697,7 +1697,7 @@ class Controller extends BaseController
                                     ]);
 
                                     ######################################### ARRAY UTILE AL CURL PER ANALITICS####################################
-
+/*
                                     $sel3 = "SELECT Id as idCamera,TipoCamere as camera FROM hospitality_tipo_camere WHERE Id = :Id AND idsito = :idsito";
                                     $res3 = DB::select($sel3, ['Id' => $rws3->TipoCamere, 'idsito' => $rws->idsito]);
                                     $rec3 = $res3[0];
@@ -1710,7 +1710,7 @@ class Controller extends BaseController
                                     $array_camere[] = ["item_name" => "quoto - $clean_camera", "quantity" => "1", "price" => $rws3->Prezzo];
 
                                     $proposta .= '&pr' . $num_cam . 'id=' . $rec3->idCamera . '&pr' . $num_cam . 'nm=QUOTO - ' . str_replace("&", " ", $rec3->camera) . ' - ' . str_replace("&", " ", $rec4->soggiorno) . ' - dal ' . $rws2->Arrivo . ' al ' . $rws2->Partenza . '&pr' . $num_cam . 'ca=' . str_replace("&", " ", $rec3->camera) . ' - ' . str_replace("&", " ", $rec4->soggiorno) . '&pr' . $num_cam . 'qt=' . $rws3->NumeroCamere . '&pr' . $num_cam . 'pr=' . $rws3->Prezzo . '$pr' . $num_cam;
-
+*/
                                     ######################################### ARRAY UTILE AL CURL PER ANALITICS####################################
 
                                     $num_cam++;
@@ -1718,6 +1718,7 @@ class Controller extends BaseController
 
                                 // ##############CURL VERSO ANALYTICS PER IMPUTARE I DATI DI QUOTO IN ANALYTICS##############
                                 // Solo se la provenienza è da Sito Web
+                               /*
                                 if ($rws->FontePrenotazione == 'Sito Web') {
 
                                     $dati_analytics   = $this->get_account_analytics($rws->idsito);
@@ -1734,9 +1735,7 @@ class Controller extends BaseController
 
                                         if ($CLIENT_ID != '') {
 
-                                            /**
-                                             * * NUOVO INVIO AD ANALYTICS GA4 EVENTO E-COMMERCE
-                                             */
+          
                                             if ($api_secret != '' && $measurement_id != '') { // solo se i campi measurement_id e api_secret sono compilati
 
                                                 $CLIENT_ID_GA4 = $CLIENT_ID;
@@ -1769,6 +1768,7 @@ class Controller extends BaseController
                                     } // fine se client id è presente
 
                                 } // fine if solo se la provenienza è da Sito Web
+                                */
                                   // ##############CURL VERSO ANALYTICS PER IMPUTARE I DATI DI QUOTO IN ANALYTICS##############
 
                             } // fine if se è già presente la conferma

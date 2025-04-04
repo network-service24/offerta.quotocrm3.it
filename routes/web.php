@@ -109,6 +109,12 @@ Route::middleware(['settaSessione', 'dizionario'])
         'params'    => '[a-zA-Z0-9=+/]+' // Pattern per "id_richiesta_idsito_tipo"
 ]);
 Route::middleware(['settaSessione', 'dizionario'])
+    ->get('/{directory}/{params}/chat', [DefaultController::class, 'default_template'])
+        ->where([
+        'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+        'params'    => '[a-zA-Z0-9=+/]+' // Pattern per "id_richiesta_idsito_tipo"
+]);
+Route::middleware(['settaSessione', 'dizionario'])
     ->get('/{directory}/{params}/questionario', [DefaultController::class, 'questionario'])
         ->where([
         'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
@@ -120,6 +126,12 @@ Route::middleware(['settaSessione', 'dizionario'])
 ## TEMPLATE SMART ##
 Route::middleware(['settaSessione', 'dizionario'])
     ->get('/smart/{directory}/{params}/index', [SmartController::class, 'smart_template'])
+    ->where([
+        'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+        'params'    => '[a-zA-Z0-9=+/]+' // Pattern per "id_richiesta_idsito_tipo"
+]);
+Route::middleware(['settaSessione', 'dizionario'])
+    ->get('/smart/{directory}/{params}/chat', [SmartController::class, 'smart_template'])
     ->where([
         'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
         'params'    => '[a-zA-Z0-9=+/]+' // Pattern per "id_richiesta_idsito_tipo"

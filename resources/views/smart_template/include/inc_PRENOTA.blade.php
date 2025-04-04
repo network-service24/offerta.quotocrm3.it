@@ -96,9 +96,11 @@
                               <input type="hidden" name="nome_utente" value="<?=$Cliente?>">
                               <input type="hidden" name="tipo_richiesta" value="<?=$TipoRichiesta?>">
                               <input type="hidden" name="id_richiesta" value="<?=$id_richiesta?>">
+                              <input type="hidden" name="idsito" value="<?=$idsito?>">
                               <input type="hidden" name="lang" value="<?=$Lingua?>">
                               <input type="hidden" name="ip" value="{{ request()->ip() }}">
                               <input type="hidden" name="agent" value="{{ request()->header('User-Agent') }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token() }}">
                               <input type="hidden" name="action" value="send_mail">
                               <div class="ca20"></div>
                               @if($result=='')
