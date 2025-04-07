@@ -472,7 +472,7 @@ class VoucherController extends Controller
                         $Prezzo          = floatval($Prezzo);
 
              
-                        $VAUCHERCamere .= '<p>'.$val->TitoloSoggiorno.' <i class=\'fa fa-angle-right\'></i> Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck >  config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!=0?''.dizionario('ETA').' '.$EtaB.' ':''):'').' - €. '.number_format($val->Prezzo,2,',','.').'</p>';
+                        $VAUCHERCamere .= '<p>'.$val->TitoloSoggiorno.' <i class=\'fa fa-angle-right\'></i> Nr. '.$val->NumeroCamere.' '.$val->TipoCamere.' '.($DataRichiestaCheck >  config('global.settings.DATA_QUOTO_V2') ?($NumAdulti!=0?$ico_adulti:'').' '.($NumBambini!=0?$ico_bimbi:'').' '.($EtaB!='' && $EtaB!=0?''.dizionario('ETA').' '.$EtaB.' ':''):'').' - €. '.number_format($val->Prezzo,2,',','.').'</p>';
 
 
 

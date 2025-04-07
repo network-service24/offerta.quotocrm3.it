@@ -55,7 +55,6 @@
 				$('[data-toggle="tooltip"]').tooltip()
 			})
 		</script>
-
 		<style>
 			/*
 			* font-family: 'Open Sans', sans-serif 
@@ -3086,214 +3085,63 @@
 			@media screen and (max-width: 576px) {}
 
 		</style>
-
-		<script type="text/javascript" src="https://www.google.com/recaptcha/api.js<?=($Lingua=='it'?'':'?hl='.$Lingua)?>" async defer></script>
-		<!-- CHIAVE GOOGLE MAP QUOTO API JAVASCRIPT E DIRECTION-->
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEhD0s4UEJdItPacNMZNLE_aoyLYGAHL8"></script>
-		<!-- CHIAVE GOOGLE MAP SITI-->
-		<!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEhD0s4UEJdItPacNMZNLE_aoyLYGAHL8"></script>-->
-		<?php
-		if($abilita_mappa == 1){
-			if($latitudine !='' && $longitudine != ''){
-		                    echo'<script>
-		                                  function init_map() {
-		                                        var isDraggable = $(document).width() > 1024 ? true : false;
-		                                        var var_location = new google.maps.LatLng('.$latitudine.','.$longitudine.');
-
-		                                                var var_mapoptions = {
-		                                                  center: var_location,
-		                                                  zoom: 16
-		                                                };
-
-		                                        var var_marker = new google.maps.Marker({
-		                                        position: var_location,
-		                                        map: var_map,
-		                                        scrollwheel: false,
-		                                        draggable: isDraggable,
-		                                        title:"'.$NomeCliente.'"});
-
-		                                        var var_map = new google.maps.Map(document.getElementById("map-container"),
-		                                        var_mapoptions);
-
-		                                        var_marker.setMap(var_map);
-
-		                                  }
-
-		                                  google.maps.event.addDomListener(window, \'load\', init_map);
-
-		                            </script>';
-			}
-		}
-		?>
-
-       @if($tot_cc >0)
-
-        <script src="{{ asset('js/jquery.payment.min.js')}}"></script>
-
-        <style type="text/css" media="screen">
-            .has-error input {
-              border-width: 4px;
-              border-color:#FF0000!important;
-              border: dotted;
-
-            }
-
-            .validation.text-danger:after {
-              content: 'Validation failed';
-            }
-
-            .validation.text-success:after {
-              content: 'Validation passed';
-            }
-
-          </style>
-
-          <script>
-            jQuery(function($) {
-              $('.cc-number').payment('formatCardNumber');
-              $('.cc-exp').payment('formatCardExpiry');
-              $('.cc-cvc').payment('formatCardCVC');
-
-              $.fn.toggleInputError = function(erred) {
-                this.parent('.form-g').toggleClass('has-error', erred);
-                return this;
-              };
-
-              $('.cc-cvc').keyup(function(e) {
-
-
-                var cardType = $.payment.cardType($('.cc-number').val());
-                $('.cc-number').toggleInputError(!$.payment.validateCardNumber($('.cc-number').val()));
-                $('.cc-exp').toggleInputError(!$.payment.validateCardExpiry($('.cc-exp').payment('cardExpiryVal')));
-                $('.cc-cvc').toggleInputError(!$.payment.validateCardCVC($('.cc-cvc').val(), cardType));
-                $('.cc-brand').text(cardType);
-                $('#nomecartacc').val(cardType);
-
-                $('.validation').removeClass('text-danger text-success');
-                $('.validation').addClass($('.has-error').length ? 'text-danger' : 'text-success');
-                if(!$('.has-error').length){
-                  $('#bottone_cc').removeAttr('disabled');
-                }
-              });
-
-            });
-          </script>
-		  
-        @endif
-
-		<style>
-		  .scroll::-webkit-scrollbar {
-		      width: 6px;
-		  }
-
-		  .scroll::-webkit-scrollbar-track {
-		      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-		      border-radius: 4px;
-		  }
-
-		  .scroll::-webkit-scrollbar-thumb {
-		      border-radius: 4px;
-		      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-		  }
-		</style>
-		<script>
-			/* modifiche ai pulsanti di axione, arcihiva, elimina, aggingi alla mailing list, ecc in base alla dimensioni dello schermo */
-			function checkScreenDimension(id) {
-				var winWidth = $(window).width();
-				var winHeight = $(window).height();
-				if (winWidth < 800) {
-					$("#add-serv").removeClass("nowrap");
-					$("#price-serv").removeClass("nowrap");
-				}
-			}
-		</script>
-
+		
         <script src="{{ asset('smart/js/_alert.js')}}"></script>
 
         <link href="{{ asset('smart/css/_alert.css')}}" rel="stylesheet" />
+		
+		<script language="javascript">
+        function controlla()
+        {          
+          var d = window.document.reg
+          var title_error = "ERRORE! Impossibile inviare il modulo! \n\n"
+          var error = ""
 
-		<script>
-			window.dataLayer = window.dataLayer || []; 
-			dataLayer.push({'event': 'Init', 'NumeroPrenotazione': '<?=$Nprenotazione?>#<?=$IdSito?>'});
-		</script>
-		<?=$head_tagmanager?>
+          <?=$valori_ctrl_script?>
+
+          if (error) {
+           alert(title_error + error); 
+           return(false);
+          } else {
+            return(true);
+          }                   
+        }
+    </script>
+	<?=$head_tagmanager?>   
 	</head>
 	<body>
-	<?=$overfade ?>
-	<div class="fadeMe"></div>
 		<?=$body_tagmanager?>
-		
 
-		    @if($result!='' && $result=='0')
-
-		        <script language="javascript">_alert("ERROR","{{$mail->ErrorInfo}}")</script>
-
-		    @elseif($result!='' && $result=='1')
-
-		    	<script language="javascript">_alert("{{dizionario('SOLUZIONECONFERMATA')}}","{{dizionario('SCELTAPROPOSTA')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}")</script>
-
-		    @elseif($result!='' && $result=='2') 
-
-					<script language="javascript">_alert("{{dizionario('MESSAGGIO')}}","{{dizionario('SCELTAPROPOSTAFATTA')}}")</script>
-
-			@elseif($result!='' && base64_decode($result)=='paypal') 
-
-				<script language="javascript">_alert("{{dizionario('PAGA_PAYPAL')}}","{{dizionario('MSG_PAYPAL')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}");</script>
-
-			@elseif($result!='' && base64_decode($result)=='payway') 
-
-				<script language="javascript">_alert("{{dizionario('PAGA_CARTA_CREDITO')}} PayWay","{{dizionario('MSG_PAYPAL')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}");</script>
-
-			@elseif($result!='' && base64_decode($result)=='virtual_pay') 
-
-			<script language="javascript">_alert("{{dizionario('PAGA_CARTA_CREDITO')}} Virtual Pay","{{dizionario('MSG_PAYPAL')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}");</script>
-			
-			@elseif($result!='' && base64_decode($result)=='stripe') 
-
-				<script language="javascript">_alert("{{dizionario('PAGA_STRIPE')}}","{{dizionario('MSG_STRIPE')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}");</script>
-
-			@elseif($result!='' && base64_decode($result)=='nexi') 
-
-				<script language="javascript">_alert("{{dizionario('PAGA_NEXI')}}","{{dizionario('MSG_NEXI')}}\n\n{{dizionario('SCELTAPROPOSTA2')}}");</script>
-			@endif
-			
-		
-		@include('smart_template/include/inc_MENU')
+        @include('smart_template/include/inc_MENU_QUEST')
 
 		<div id="start"></div>
 
-		@include('smart_template/include/inc_CHAT')
+        @include('smart_template/include/inc_QUESTIONARIO')
 
-		@if($TipoRichiesta == 'Conferma' && $Chiuso == 0)
-			@include('smart_template/include/inc_PAGAMENTO')
-		@endif
+	@if($tot_cs > 0)
+		<div class="m m-x-3 m-x-tr m-m-6 m-xs-12 m-xs-tc">
+			<div class="box4">
+				<?=$logo?>
+			</div>
+		</div>
+		<div class="m m-x-9 m-x-tl m-m-6 m-xs-12 m-xs-tc">
+			<div class="box4 t14 w400 twhite">
+				<b><?=$NomeCliente?></b><br> <?=$Indirizzo?> <?=$Localita?> - <?=$Cap?> (<?=$Provincia?>)
+				<br><?=$SitoWeb?>
+				 <div>
+			                        <?=$Facebook?>
+                                     <?=$Twitter?>
+                                     <?=$GooglePlus?>
+                                     <?=$Instagram?>
+                                     <?=$Linkedin?>
+                                     <?=$Pinterest?> 
+                </div>	
+			</div>
+		</div>
+	@else
+			@include('smart_template/include/inc_FOOTER')
+	@endif
+    <script src="{{asset('smart/js/main.js')}}"></script>
 
-		@include('smart_template/include/inc_PROPOSTE')
-
-		@if($TipoRichiesta == 'Preventivo')
-			@include('smart_template/include/inc_PRENOTA')
-		@endif
-
-		@include('smart_template/include/inc_INFOHOTEL')
-
-		@include('smart_template/include/inc_DOVESIAMO')
-
-		@include('smart_template/include/inc_EVENTI')
-
-		@include('smart_template/include/inc_PUNTI')
-
-		@include('smart_template/include/inc_PHOTOGALLERY')
-
-		@include('smart_template/include/inc_CONDIZIONI')
-
-		@include('smart_template/include/inc_FOOTER')
-
-		<script src="{{asset('smart/js/main.js')}}"></script>
-
-		<script src="{{asset('js/responsiveslides.min.js')}}"></script>
-
-    	<link href="{{asset('css/responsiveslides.min.css')}}" rel="stylesheet" />
-
-		<?php echo $content_banner?> 
 	</body>
 </html>

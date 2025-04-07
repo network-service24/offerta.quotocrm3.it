@@ -2826,7 +2826,7 @@ class Controller extends BaseController
             $outputTesto = $TestoDefault;
         }
 
-        return $outputTesto;
+        return stripslashes($outputTesto);
     }
 
 
