@@ -597,7 +597,14 @@
                               <div><small><b><?=dizionario('CREATA_DA')?></b><br><em><?=($disable==false?$Operatore:'')?></em></small></div>
                           </div>
                           <div class="col-md-1">
-                              <div><?=($ImgOp==''?'<img src="/img/receptionists.png" style="width:50px;height:50px" class="img-circle">':'<img src="'.config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'" style="width:50px;height:50px" class="img-circle">')?></div>
+                            <?php 
+                                if (file_exists(public_path('uploads/'.$idsito.'/'.$ImgOp))) {
+                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'';
+                                }else{
+                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$ImgOp.'';
+                                }
+                            ?>
+                              <div><?=($ImgOp==''?'<img src="/img/receptionists.png" style="width:50px;height:50px" class="img-circle">':'<img src="'.$ImgOperatore .'" style="width:50px;height:50px" class="img-circle">')?></div>
                           </div>
                       </div>
                     <br>               

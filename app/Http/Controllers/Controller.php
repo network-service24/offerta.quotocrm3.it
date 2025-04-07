@@ -856,8 +856,13 @@ class Controller extends BaseController
                             if($ImgOperatore == ''){
                                 $ImgOperatore = ''.env('APP_URL').'img/receptionists.png';
                             }else{
-                                $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$row->idsito.'/'.$ImgOperatore.'';
-                            }	
+                                if (file_exists(public_path('uploads/'.$row->idsito.'/'.$ImgOperatore))) {
+                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$row->idsito.'/'.$ImgOperatore.'';
+                                }else{
+                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$ImgOperatore.'';
+                                }
+                                	
+                            }
                         }
 						
                     }

@@ -2564,7 +2564,13 @@ class SmartController extends Controller
         $intestazionemobile2 = $Localita;
         $coloresfondo        ="#A4A4A4";//colore di sfondo della pagina
 
-        $ownerimg            = ($ImgOp==''?'<img src="/img/receptionists.png">':'<img src="'.config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'">');//immagine del proprietario
+        if (file_exists(public_path('uploads/'.$idsito.'/'.$ImgOp))) {
+            $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'';
+        }else{
+            $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$ImgOp.'';
+        }
+
+        $ownerimg            = ($ImgOp==''?'<img src="/img/receptionists.png">':'<img src="'.$ImgOperatore.'">');//immagine del proprietario
         $telefono            = $tel;
         $sitoweb             = $SitoWeb;
 
