@@ -598,8 +598,10 @@
                           </div>
                           <div class="col-md-1">
                             <?php 
-                                if (file_exists(public_path('uploads/'.$idsito.'/'.$ImgOp))) {
-                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'';
+                                $CheckImgOp = config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$ImgOp.'';
+
+                                if (filter_var($CheckImgOp, FILTER_VALIDATE_URL) && @get_headers($CheckImgOp, 1)[0] == 'HTTP/1.1 200 OK') {
+                                    $ImgOperatore = $CheckImgOp;
                                 }else{
                                     $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$ImgOp.'';
                                 }

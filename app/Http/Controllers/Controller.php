@@ -856,8 +856,9 @@ class Controller extends BaseController
                             if($ImgOperatore == ''){
                                 $ImgOperatore = ''.env('APP_URL').'img/receptionists.png';
                             }else{
-                                if (file_exists(public_path('uploads/'.$row->idsito.'/'.$ImgOperatore))) {
-                                    $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/'.$row->idsito.'/'.$ImgOperatore.'';
+                                $CheckImgOp = config('global.settings.BASE_URL_IMG').'uploads/'.$row->idsito.'/'.$ImgOperatore;
+                                if (filter_var($CheckImgOp, FILTER_VALIDATE_URL) && @get_headers($CheckImgOp, 1)[0] == 'HTTP/1.1 200 OK') {
+                                    $ImgOperatore = $CheckImgOp;
                                 }else{
                                     $ImgOperatore = config('global.settings.BASE_URL_IMG').'uploads/loghi/'.$ImgOperatore.'';
                                 }
