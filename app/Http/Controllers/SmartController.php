@@ -3657,7 +3657,7 @@ class SmartController extends Controller
                 'intestazionemobile2'   => $intestazionemobile2,
                 'coloresfondo'          => $coloresfondo,
                 'ownerimg'              => $ownerimg,
-                'telefono'              => $telefono,
+                'telefono'              => ($telefono==''?'':$telefono),
                 'proposta_form'         => $proposta_form,
                 'proposta_titolo'       => $proposta_titolo,
                 'proposta_specchietto'  => $proposta_specchietto,
@@ -3904,7 +3904,7 @@ class SmartController extends Controller
                                                                 'logotitle'           => $logotitle,
                                                                 'intestazionemobile1' => $intestazionemobile1,
                                                                 'intestazionemobile2' => $intestazionemobile2,
-                                                                'telefono'            => $tel,
+                                                                'telefono'            => ($tel==''?'':$tel),
                                                             ]
                                                         );
     }
