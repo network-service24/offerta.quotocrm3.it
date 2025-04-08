@@ -2412,7 +2412,7 @@ class Controller extends BaseController
                                 </button>
                               </div>
                               <div class="modal-body">
-                              ' . ($Logo == '' ? '<i class="fa fa-bed fa-5x fa-fw"></i>' : '<img src="' . config('global.settings.BASE_URL_IMG') . 'uploads/loghi_siti/' . $Logo . '" />') . '
+                              ' . ($Logo == '' ? '<i class="fa fa-bed fa-5x fa-fw"></i>' : '<img src="' . config('global.settings.BASE_URL_IMG') . 'uploads/loghi/' . $Logo . '" />') . '
                               <br /><br />
                               <titolo>' . $row->Titolo . '</titolo>
                               <sottotitolo>' . $row->Descrizione . '</sottotitolo>

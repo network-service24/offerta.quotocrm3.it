@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Custom1Controller;
 use App\Http\Controllers\Custom2Controller;
 use App\Http\Controllers\Custom3Controller;
+use App\Http\Controllers\ProController;
 use App\Http\Controllers\Custom4Controller;
 use App\Http\Controllers\Custom5Controller;
 use App\Http\Controllers\Custom6Controller;
@@ -31,7 +32,6 @@ use Illuminate\Support\Facades\Route;
 /* Route::get('/', function () {
     return view('welcome');
 }); */
-
 ### CONTROLLER FUNZIONI GENERICHE PER TUTTI GLI ALTRI TEMPLATE ###
 Route::post('/calc_prezzo_serv_landing', [Controller::class, 'calc_prezzo_serv_landing']);
 Route::post('/calc_prezzo_serv_a_persona_landing', [Controller::class, 'calc_prezzo_serv_a_persona_landing']);
@@ -54,58 +54,28 @@ Route::post('/virtualpayOK', [Controller::class, 'virtualpayOK']);
 /** registrazione pagamento NEXI async */
 Route::get('/esito', [Controller::class, 'esito']);
 Route::get('/annullo', [Controller::class, 'annullo']);
-/** contatore aperture ed utente online per landing template */
-Route::get('/{template}/{directory}/{params}/count', [Controller::class, 'count'])->where([
- 'template'  => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
- 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
- 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
-]);
-/** contatore aperture ed utente online per landing defautl */
-Route::get('/{directory}/{params}/count', [Controller::class, 'count_default'])->where([
- 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
- 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
-]);
+
 /** registrazione salvataggio questionario */
 Route::post('/save_questionario', [Controller::class, 'save_questionario']);
 ### FINE CONTROLLER FUNZIONI GENERICHE PER TUTTI GLI ALTRI TEMPLATE ###
 
 ### CONTROLLER VOUCHER ###
 Route::middleware(['settaSessione', 'dizionario'])
- ->get('/{directory}/{params}/voucher', [VoucherController::class, 'voucher'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
+->get('/{directory}/{params}/voucher', [VoucherController::class, 'voucher'])
+->where([
+ 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+ 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
 ### FINE CONTROLLER VOUCHER ###
 
 ### CONTROLLER VOUCHER RECUPERO ###
 Route::middleware(['settaSessione', 'dizionario'])
- ->get('/{directory}/{params}/voucher_rec', [VoucherRecuperoController::class, 'voucher_rec'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
+->get('/{directory}/{params}/voucher_rec', [VoucherRecuperoController::class, 'voucher_rec'])
+->where([
+ 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+ 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
 ### FINE CONTROLLER VOUCHER RECUPERO ###
-
-## TEMPLATE DEFAULT ##
-Route::middleware(['settaSessione', 'dizionario'])
- ->get('/{directory}/{params}/index', [DefaultController::class, 'default_template'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
-Route::middleware(['settaSessione', 'dizionario'])
- ->get('/{directory}/{params}/chat', [DefaultController::class, 'default_template'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
-Route::middleware(['settaSessione', 'dizionario'])
- ->get('/{directory}/{params}/questionario', [DefaultController::class, 'questionario'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
 
 ## FINE TEMPLATE DEFAULT ##
 
@@ -134,7 +104,7 @@ Route::middleware(['settaSessione', 'dizionario'])
  ->get('/custom1/{directory}/{params}/index', [Custom1Controller::class, 'custom1_template'])
  ->where([
   'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+  'params'    => '[a-zA-Z0-9+/=]+', // Pattern per "id_richiesta_idsito_tipo"
  ]);
 Route::middleware(['settaSessione', 'dizionario'])
  ->get('/custom1/{directory}/{params}/chat', [Custom1Controller::class, 'custom1_template'])
@@ -189,6 +159,31 @@ Route::middleware(['settaSessione', 'dizionario'])
   'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
  ]);
 
+ ## TEMPLATE CUSTOM ##
+ 
+Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/{template}/{directory}/{params}/index', [ProController::class, 'pro_template'])
+ ->where([
+  'template' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+ ]);
+Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/{template}/{directory}/{params}/chat', [ProController::class, 'pro_template'])
+ ->where([
+  'template' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+ ]);
+Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/{template}/{directory}/{params}/questionario', [ProController::class, 'questionario'])
+ ->where([
+  'template' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+ ]);
+
+ /*
 ## TEMPLATE CUSTOM 4 ##
 Route::middleware(['settaSessione', 'dizionario'])
  ->get('/custom4/{directory}/{params}/index', [Custom4Controller::class, 'custom4_template'])
@@ -307,7 +302,8 @@ Route::middleware(['settaSessione', 'dizionario'])
  ->where([
   'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
   'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
+ ]); 
+ */
 
 ## CHECKIN TEMPLATE ##
 Route::middleware(['settaSessione', 'dizionario'])
@@ -317,3 +313,39 @@ Route::middleware(['settaSessione', 'dizionario'])
   'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
  ]);
 ## FINE CHECKIN TEMPLATE ##
+
+
+/** contatore aperture ed utente online per landing defautl */
+Route::get('/{directory}/{params}/count', [Controller::class, 'count_default'])->where([
+'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
+
+/** contatore aperture ed utente online per landing template */
+Route::get('/{template}/{directory}/{params}/count', [Controller::class, 'count'])->where([
+'template'  => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
+   
+
+
+## TEMPLATE DEFAULT ##
+Route::middleware(['settaSessione', 'dizionario'])
+->get('/{directory}/{params}/index', [DefaultController::class, 'default_template'])
+->where([
+ 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+ 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
+Route::middleware(['settaSessione', 'dizionario'])
+->get('/{directory}/{params}/chat', [DefaultController::class, 'default_template'])
+->where([
+ 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+ 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);
+Route::middleware(['settaSessione', 'dizionario'])
+->get('/{directory}/{params}/questionario', [DefaultController::class, 'questionario'])
+->where([
+ 'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+ 'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+]);

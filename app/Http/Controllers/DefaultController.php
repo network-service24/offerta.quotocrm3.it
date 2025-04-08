@@ -2354,8 +2354,6 @@ class DefaultController extends Controller
      */
     public function default_template($directory, $params, Request $request)
     {
-        $template = '';
-        session(['TEMPLATE' => $template]);
         // Decodifica il parametro params per sicurezza
         $decodedParams = base64_decode($params);
         // Verifica che la stringa sia valida
@@ -2371,6 +2369,7 @@ class DefaultController extends Controller
         }
 
         list($id_richiesta, $idsito, $tipo) = $parts;
+
 
         if ($idsito) {
             session(['IDSITO' => $idsito]);
