@@ -92,7 +92,7 @@ class ProController extends Controller
                             ON
                                 hospitality_dizionario_lingua.id_dizionario = hospitality_dizionario.id
                             WHERE 
-                                hospitality_dizionario.idsito = :idisto 
+                                hospitality_dizionario.idsito = :idsito 
                             AND
                                 hospitality_dizionario.Lingua = :Lingua
                             AND
@@ -103,6 +103,7 @@ class ProController extends Controller
                                 hospitality_dizionario_lingua.Lingua = :Lingua2";
             $res    = DB::select($q_text,['idsito' => $idsito, 'Lingua' => 'it', 'idsito2' => $idsito, 'Lingua2' => $Lingua, 'etichetta' => $etichetta]);
             $rs     = $res[0];
+          
             $Testo  = str_replace("[cliente]",$Cliente,$rs->testo);
         }
 
@@ -868,20 +869,1548 @@ class ProController extends Controller
         }
 
 
+        
+        /**
+         * questionario
+         *
+         * @param  mixed $template
+         * @param  mixed $directory
+         * @param  mixed $params
+         * @param  mixed $request
+         * @return void
+         */
+        public function questionario($template, $directory, $params, Request $request)
+        {
+            // Decodifica il parametro params per sicurezza
+            $decodedParams = base64_decode($params);
+            // Verifica che la stringa sia valida
+            if (! $decodedParams || ! str_contains($decodedParams, '_')) {
+                abort(404, "Formato URL non valido!!");
+            }
+            // Suddivisione dei parametri separati da "_"
+            $parts = explode('_', $decodedParams);
+    
+            // Controllo per evitare errori se i parametri non sono nel formato corretto
+            if (count($parts) !== 3) {
+                abort(404, "Formato URL non valido!!");
+            }
+    
+            list($id_richiesta, $idsito, $tipo) = $parts;
+        
+            $select = "SELECT hospitality_guest.*
+                    FROM hospitality_guest
+                    WHERE hospitality_guest.idsito = :idsito
+                    AND hospitality_guest.Id = :id_richiesta";
+            $sel  = DB::select($select,['idsito' => $idsito, 'id_richiesta' => $id_richiesta]);
+            $res = sizeof($sel);
+            if(($res)>0){
+                $rec           = $sel[0];
+                $Lingua        = $rec->Lingua;
+                $Nome          = $rec->Nome;
+                $Cognome       = $rec->Cognome;
+                $Email         = $rec->Email;
+                $Cliente       = $Nome.' '.$Cognome;
+                $Nprenotazione = $rec->NumeroPrenotazione;
+            }
+    
+            $valori_ctrl_script = '';
+            $question           = '';
+            ###QUESTIONARIO###
+            $questionario = "SELECT hospitality_domande_lingua.domanda,hospitality_domande_lingua.domanda_id
+                                FROM hospitality_domande
+                                INNER JOIN hospitality_domande_lingua ON hospitality_domande_lingua.domanda_id = hospitality_domande.Id
+                                WHERE hospitality_domande.idsito = :idsito
+                                AND hospitality_domande_lingua.lingue = :Lingua
+                                AND hospitality_domande.Abilitato = :Abilitato
+                                ORDER BY hospitality_domande.Ordine ASC";
+            $res_quest = DB::select($questionario,['idsito' => $idsito, 'Lingua' => $Lingua, 'Abilitato' => 1]);
+            $tot_quest = sizeof($res_quest);
+                if($tot_quest > 0){
+                    foreach($res_quest as $key => $record){
+    
+                        $valori_ctrl_script .= 'var checked_recensione_'.$record->domanda_id.' = document.querySelector(\'input[name = "recensione_'.$record->domanda_id.'"]:checked\')'."\r\n";
+                        $valori_ctrl_script .= 'if(checked_recensione_'.$record->domanda_id.' == null)   error += "Scegli un valore per: '.$record->domanda.'. \n"'."\r\n";
+    
+                        $question .=' <div class="row">
+                                            <div class="col-md-4" style="white-space:nowrap">
+                                            <h3 class="maiuscolo">'.$record->domanda.'</h3>
+                                            <input type="hidden" name="id_domanda_'.$record->domanda_id.'" value="'.$record->domanda_id.'">
+                                            </div>
+                                            <div class="col-md-8 text-right" style="padding-top:10px!important">
+                                                <table style="float:right;" cellspacing="10" cellpadding="0">
+                                                <tr>
+                                                    <td class="tc"><input type="radio" name="recensione_'.$record->domanda_id.'" value="1" required></td>
+                                                    <td class="tc"><input type="radio" name="recensione_'.$record->domanda_id.'" value="2" required></td>
+                                                    <td class="tc"><input type="radio" name="recensione_'.$record->domanda_id.'" value="3" required></td>
+                                                    <td class="tc"><input type="radio" name="recensione_'.$record->domanda_id.'" value="4" required></td>
+                                                    <td class="tc"><input type="radio" name="recensione_'.$record->domanda_id.'" value="5" required></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="tc"><i class="far fa-frown fa-2x fa-fw" style="color:#dd4b39"></i></td>
+                                                    <td class="tc"><i class="far fa-meh fa-2x fa-fw" style="color:#ff851b"></i></td>
+                                                    <td class="tc"><i class="far fa-grin fa-2x fa-fw" style="color:#f39c12"></i></td>
+                                                    <td class="tc"><i class="far fa-smile fa-2x fa-fw" style="color:#00c0ef"></i></td>
+                                                    <td class="tc"><i class="far fa-smile-wink fa-2x fa-fw" style="color:#00acc1"></i></td>   
+                                                </tr>
+                                                </table>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                            <div class="col-md-12">
+                                            <textarea class="input_ground" name="risposta_'.$record->domanda_id.'" style="width:100%;height:80px;padding:10px" placeholder="'.dizionario('LASCIA_COMMENTO').'"></textarea>
+                                            </div>
+                                    </div>';
+                    }
+    
+                }
+    
+                $rw = $this->social($idsito);
+                if($rw->Facebook!=''){
+                    $Facebook   = '<a  href="'.$rw->Facebook.'" target="_blank"><i class="fa-brands fa-facebook-f text-secondary"></i></a>';
+                }else{
+                    $Facebook   = '';
+                }
+                if($rw->Twitter!=''){
+                    $Twitter    = '<a  href="'.$rw->Twitter.'" target="_blank"><img src="/img/x-twitter.png" style="height:24px;margin-top:-5px"></a>';
+                }else{
+                    $Twitter   = '';
+                }
+                if($rw->Instagram!=''){
+                    $Instagram    = '<a  href="'.$rw->Instagram.'" target="_blank"><i class="fa-brands fa-instagram text-secondary"></i></a>';
+                }else{
+                    $Instagram   = '';
+                }
+                if($rw->Pinterest!=''){
+                    $Pinterest    = '<a  href="'.$rw->Pinterest.'" target="_blank"><i class="fa-brands fa-pinterest-p text-secondary"></i></a>' ;
+                }else{
+                    $Pinterest   = '';
+                }
+
+                $row = $this->getCliente($idsito);
+         
+                $NomeCliente         = $row->nome;
+                $EmailCliente        = $row->email;
+                $Indirizzo           = $row->indirizzo;
+                $Localita            = $row->nome_comune;
+                $Cap                 = $row->cap;
+                $CIR                 = $row->CIR;
+                $CIN                 = $row->CIN;
+                if(strstr($row->tel,'+39') || strstr($row->tel,'0039')){
+                    $tel             = $row->tel;
+                }else{
+                    $tel             = '+39 '.$row->tel;
+                }
+                $Provincia           = $row->sigla_provincia;
+                $SitoWeb             = 'https://'.$row->web;
+                $Logo                = $row->logo;
+                $TagManager          = $row->TagManager;
+    
+                $cs = "SELECT * FROM hospitality_customer_satisfaction WHERE id_richiesta = :id_richiesta AND data_compilazione != :data_compilazione ";
+                $res_cs = db::select($cs,['id_richiesta' => $id_richiesta, 'data_compilazione' => '']);
+                $tot_cs = sizeof($res_cs);
+    
+    
+                $codeTagMan = $this->tagManager($idsito,$TagManager);
+                $head_tagmanager = $codeTagMan[0];
+                $body_tagmanager = $codeTagMan[1];
+    
+                switch($Lingua){
+                    case"it":
+                      $fraseChat                      = 'Se hai ancora dubbi Chatta con Noi';
+                      $tooltipChat                    = 'Per qualsiasi dubbio chatta diretttamente con noi';
+                      $gratis                         = 'Gratis';
+                      $gentile                        = 'Gentile';
+                      break;
+                    case"en":
+                      $fraseChat                      = 'If you still have doubts, chat with us';
+                      $tooltipChat                    = 'If you have any doubts, chat directly with us';
+                      $gratis                         = 'Free';
+                      $gentile                        = 'Dear';
+                      break;
+                    case"fr":
+                      $fraseChat                      = 'Si vous avez encore des doutes, discutez avec nous';
+                      $tooltipChat                    = 'Si vous avez des doutes, discutez directement avec nous';
+                      $gratis                         = 'Gratuit';
+                      $gentile                        = 'Bonjour ';
+                      break;
+                    case"de":
+                      $fraseChat                      = 'Wenn Sie immer noch Zweifel haben, chatten Sie mit uns';
+                      $tooltipChat                    = 'Wenn Sie Zweifel haben, chatten Sie direkt mit uns';
+                      $gratis                         = 'Frei';
+                      $gentile                        = 'Hallo ';
+                      break;
+                   }
+
+                $logoTop = ($Logo == '' ? '<i class="fas fa-bed fa-5x fa-fw"></i>' : '<img src="' . config('global.settings.BASE_URL_IMG') . 'uploads/loghi/' . $Logo . '" style="width:100%;max-width:250px;" class="logo">');
+                $logoFooter = ($Logo == '' ? '<i class="fas fa-bed fa-5x fa-fw"></i>' : '<img src="' . config('global.settings.BASE_URL_IMG')  . 'uploads/loghi/' . $Logo . '" width="200px">');
+                
+                $rec = $this->imageVideo($idsito, $template);
+                $imgTop = $rec[0];
+  
+
+                return view('pro_template/questionario',
+                                                                [
+                                                                    'valori_ctrl_script' => $valori_ctrl_script,
+                                                                    'question'           => $question,
+                                                                    'Indirizzo'          => $Indirizzo,
+                                                                    'Localita'           => $Localita,
+                                                                    'Provincia'          => $Provincia,
+                                                                    'Cap'                => $Cap,
+                                                                    'CIR'                => $CIR,
+                                                                    'CIN'                => $CIN,
+                                                                    'SitoWeb'            => $SitoWeb,
+                                                                    'EmailCliente'       => $EmailCliente,
+                                                                    'NomeCliente'        => $NomeCliente,
+                                                                    'Cliente'            => $Cliente,
+                                                                    'Email'              => $Email,
+                                                                    'Nome'               => $Nome,
+                                                                    'Cognome'            => $Cognome,
+                                                                    'Facebook'           => $Facebook,
+                                                                    'Twitter'            => $Twitter,
+                                                                    'Instagram'          => $Instagram,
+                                                                    'Pinterest'          => $Pinterest,
+                                                                    'tot_cs'             => $tot_cs,
+                                                                    'Lingua'             => $Lingua,
+                                                                    'head_tagmanager'    => $head_tagmanager,
+                                                                    'body_tagmanager'    => $body_tagmanager,
+                                                                    'directory'          => $directory,
+                                                                    'params'             => $params,
+                                                                    'idsito'             => $idsito,
+                                                                    'id_richiesta'       => $id_richiesta,
+                                                                    'tel'                => $tel,
+                                                                    'gentile'            => $gentile,
+                                                                    'logoTop'            => $logoTop,
+                                                                    'logoFooter'         => $logoFooter,
+                                                                    'imgTop'             => $imgTop,
+                                                                    'Nprenotazione'     => $Nprenotazione,
+                                                                ]
+                                                            );
+        }
 
 
+    /**
+     * vaglia
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @return void
+     */
+    public function vaglia($idsito,$Lingua,$id_richiesta)
+    {
+        $vaglia_posta = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+              $CAMBIA_VAGLIA        =  'Cambia il pagamento con Vaglia';
+            break;
+            case"en":
+              $CAMBIA_VAGLIA        =  'Change the payment with Postal Order';
+            break;
+            case"fr":
+              $CAMBIA_VAGLIA        =  'Changer le paiement avec Postal Order';
+            break;
+            case"de":
+              $CAMBIA_VAGLIA        =  'Ändern Sie die Zahlung mit Postanweisung';
+            break;
+          }
+        #### VAGLIA ####
+        $vp = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_vp = DB::select($vp,['idsito' => $idsito, 'TipoPagamento' => 'Vaglia Postale', 'Abilitato' => 1]);
+        $tot_vp = sizeof($res_vp);
+        if($tot_vp > 0){
+            $row_vp = $res_vp[0];
+            $OrdineVP = $row_vp->Ordine;
+
+            $v = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_v = DB::select($v,['idsito' => $idsito, 'pagamenti_id' => $row_vp->Id, 'lingue' => $Lingua]);
+            $row_v = $res_v[0];
+            $Pagamento_vp = $row_v->Pagamento;
+            $Descrizione_vp = $row_v->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta = $datiG->AccontoRichiesta;
+            $AccontoLibero    = $datiG->AccontoLibero;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+            $vaglia_posta .= ' <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12"><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                                <h4><b>'.$Pagamento_vp.'</b></h4>
+                                <span class="text16">'.$Descrizione_vp.'</span><br><br>';
+
+                                        if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                            $vaglia_posta .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                            $vaglia_posta .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                            $vaglia_posta .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                            $vaglia_posta .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                        }
+
+            $vaglia_posta .= '      
+                                    <div id="response_vp"></div>
+                                    <form  method="POST" id="form_vaglia" name="form_vaglia">
+                                            <input type="hidden" name="id_richiesta" value="'.$id_richiesta.'">
+                                            <input type="hidden" name="idsito" value="'.$idsito.'">
+                                            <input type="hidden" name="TipoPagamento" value="Vaglia Postale">
+                                            <input type="hidden" name="action" value="add_payment">
+                                            <input name="vg_policy" id="vg_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')">
+                                            <label for="vg_policy" class="control-label f-12">'.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small></label>
+                                            <div class="clearfix"></div>';
+                        if($tot_pag_check == 0 && $tot_cc_check == 0){
+                            $vaglia_posta .='<button type="submit" class="pulsante p-2 noBorder" id="bottone_vaglia" >'.dizionario('SCELGO_VAGLIA').'</button>';
+                        }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                        if($TipoPagamento == 'Vaglia Postale'){
+                            $vaglia_posta .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Vaglia Postale</span>';
+                        }else{
+                            $vaglia_posta .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                            $vaglia_posta .='<br><button type="submit" class="pulsante p-2 noBorder" id="bottone_vaglia" >'.$CAMBIA_VAGLIA.'</button>';
+                        }
+                        }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                            $vaglia_posta .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                            $vaglia_posta .='<br><button type="submit" class="pulsante p-2 noBorder" id="bottone_vaglia" >'.$CAMBIA_VAGLIA.'</button>';
+                        }
 
 
+            $vaglia_posta .= '  </form>
+                                        <script>
+                                            $(document).ready(function() {
+                                                $("#form_vaglia").submit(function(){
+
+                                                    var dati = $("#form_vaglia").serialize();
+                                                        $.ajaxSetup({
+                                                            headers: {
+                                                                \'X-CSRF-TOKEN\': $(\'meta[name="csrf-token"]\').attr(\'content\')
+                                                            }
+                                                        });
+                                                        $.ajax({
+                                                            url: "/salva_pagamento",
+                                                            type: "POST",
+                                                            data: dati,
+                                                            success: function(res){
+                                                                _alert("'.dizionario('SCELGO_VAGLIA').'","'.dizionario('MSG_VAGLIA').'<br>'.dizionario('SCELTAPROPOSTA2').'");
+                                                                setTimeout(function(){
+                                                                        $("#form_vaglia").fadeOut();
+                                                                    },1000);
+                                                            },
+                                                            error: function(){
+                                                                alert("Chiamata fallita, si prega di riprovare...");
+                                                            }
+                                                            });
+                                                        return false; 
+                                                });
+                                            });
+                                        </script>';
+                $vaglia_posta .= '</div></div></div>';
+        }
+
+        return $vaglia_posta;
+    }    
+    
+     /**
+     * bonifico
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @return void
+     */
+    public function bonifico($idsito,$Lingua,$id_richiesta)
+    {
+        $bonifico_bancario = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+              $CAMBIA_BONIFICO      =  'Cambia il pagamento con Bonifico';
+            break;
+            case"en":
+              $CAMBIA_BONIFICO      =  'Change the payment by bank transfer ';
+            break;
+            case"fr":
+              $CAMBIA_BONIFICO      =  'Modifier le paiement par virement bancaire';
+            break;
+            case"de":
+              $CAMBIA_BONIFICO      =  'Ändern Sie die Zahlung per Banküberweisung';
+            break;
+          }
+        #### BONIFICO ####
+        $bn = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_bn = DB::select($bn,['idsito' => $idsito,'Abilitato' => 1,'TipoPagamento' => 'Bonifico Bancario']);
+        $tot_bn = sizeof($res_bn);
+        if($tot_bn > 0){
+            $row_bn = $res_bn[0];
+            $OrdineBN = $row_bn->Ordine;
+
+            $b = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :Lingua";
+            $res_b = DB::select($b,['idsito' => $idsito,'pagamenti_id' => $row_bn->Id,'Lingua' => $Lingua]);
+            $row_b = $res_b[0];
+            $Pagamento_bn = $row_b->Pagamento;
+            $Descrizione_bn = $row_b->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta = $datiG->AccontoRichiesta;
+            $AccontoLibero    = $datiG->AccontoLibero;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+            $bonifico_bancario .= ' <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12"><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                                    <p><b>'.$Pagamento_bn.'</b></p>
+                                    <span class="text16">'.$Descrizione_bn.'</span><br><br>';
+
+                                        if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                            $bonifico_bancario .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                            $bonifico_bancario .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                            $bonifico_bancario .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                            $bonifico_bancario .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                        }
+
+            $bonifico_bancario .= ' <div id="response_bf"></div>
+                                    <form  method="POST" id="form_bonifico" name="form_bonifico">
+                                            <input type="hidden" name="id_richiesta" value="'.$id_richiesta.'">
+                                            <input type="hidden" name="idsito" value="'.$idsito.'">
+                                            <input type="hidden" name="TipoPagamento" value="Bonifico">
+                                            <input type="hidden" name="action" value="add_payment">
+                                            <input name="bf_policy" id="bf_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')">
+                                            <label for="bf_policy" class="control-label f-12">'.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small></label>
+                                            <div class="clearfix"></div>';
+
+                    if($tot_pag_check== 0 && $tot_cc_check == 0){
+                        $bonifico_bancario .='<button type="submit" class="pulsante p-2 noBorder" id="bottone_bonifico" >'.dizionario('SCELGO_BONIFICO').'</button>';
+                    }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                    if($TipoPagamento == 'Bonifico'){
+                        $bonifico_bancario .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Bonifico Bancario</span>';
+                    }else{
+                        $bonifico_bancario .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                        $bonifico_bancario .='<br><button type="submit" class="pulsante p-2 noBorder" id="bottone_bonifico" > '.$CAMBIA_BONIFICO.'</button>';
+                    }
+                    }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                        $bonifico_bancario .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                        $bonifico_bancario .='<br><button type="submit" class="pulsante p-2 noBorder" id="bottone_bonifico" > '.$CAMBIA_BONIFICO.'</button>';
+                }
+
+            $bonifico_bancario .= '   </form>
+                                        <script>
+                                            $(document).ready(function() {
+                                                $("#form_bonifico").submit(function(){
+
+                                                    var dati = $("#form_bonifico").serialize();
+                                                        $.ajaxSetup({
+                                                            headers: {
+                                                                \'X-CSRF-TOKEN\': $(\'meta[name="csrf-token"]\').attr(\'content\')
+                                                            }
+                                                        });
+                                                        $.ajax({
+                                                            url: "/salva_pagamento",
+                                                            type: "POST",
+                                                            data: dati,
+                                                            success: function(res){
+                                                                _alert("'.dizionario('SCELGO_BONIFICO').'","'.dizionario('MSG_BONIFICO').'<br>'.dizionario('SCELTAPROPOSTA2').'");
+                                                                setTimeout(function(){
+                                                                        $("#form_bonifico").fadeOut();
+                                                                    },1000);
+                                                            },
+                                                            error: function(){
+                                                                alert("Chiamata fallita, si prega di riprovare...");
+                                                            }
+                                                            });
+                                                        return false;
+                                                });
+                                            });
+                                        </script>';
+                $bonifico_bancario .= '</div></div></div>';
+        }
+        return $bonifico_bancario;
+    }   
+
+    /**
+     * carta_credito
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @return void
+     */
+    public function carta_credito($idsito,$Lingua,$id_richiesta)
+    {
+        $carte_credito = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+                $CAMBIA_CARTA_CREDITO =  'Cambia il pagamento con Carta di Credito ';
+            break;
+            case"en":
+                $CAMBIA_CARTA_CREDITO =  'Change your credit card payment ';
+            break;
+            case"fr":
+                $CAMBIA_CARTA_CREDITO =  'Modifier votre paiement par carte de crédit ';
+            break;
+            case"de":
+                $CAMBIA_CARTA_CREDITO =  'Ändern Sie Ihre Kreditkartenzahlung ';
+            break;
+        }
+        #### CARTA DI CREDITO####
+        $cc = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato AND TipoPagamento = :TipoPagamento";
+        $res_cc = DB::select($cc,['idsito' => $idsito, 'TipoPagamento' => 'Carta di Credito', 'Abilitato' => 1 ]);
+        $tot_cc = sizeof($res_cc);
+        if($tot_cc > 0){
+            $row_cc = $res_cc[0];
+
+            $OrdineCC   = $row_cc->Ordine;
+            $mastercard = $row_cc->mastercard;
+            $visa       = $row_cc->visa;
+            $amex       = $row_cc->amex;
+            $diners     = $row_cc->diners;
+
+            $c = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_c = DB::select($c,['idsito' => $idsito, 'pagamenti_id' => $row_cc->Id, 'lingue' => $Lingua ]);
+            $row_c = $res_c[0];
+            $Pagamento_cc = $row_c->Pagamento;
+            $Descrizione_cc = $row_c->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta = $datiG->AccontoRichiesta;
+            $AccontoLibero    = $datiG->AccontoLibero;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+            $carte_credito .= ' <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                                <h4><b>'.$Pagamento_cc.'</b></h4>
+                                <span class="text16">'.$Descrizione_cc.'</span><br><br>';
+
+                                        if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                            $carte_credito .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="t40 tcolor">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                            $carte_credito .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="t40 tcolor">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                            $carte_credito .= '<b>'.$ACCONTO.'</b>:  <b class="t40 tcolor">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                        }
+                                        if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                            if($AccontoImporto >= 1){
+                                                $carte_credito .= '<b>'.$ACCONTO.'</b>:  <b class="t40 tcolor">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                            }else{
+                                                $carte_credito .= '<b>'.dizionario('CARTACREDITOGARANZIA').'</b><br><br>';
+                                            }
+
+                                        }
+
+                $carte_credito .= ($amex==1?'<i class="fa fa-cc-amex fa-4x fa-fw text-aqua"></i>':'');
+                $carte_credito .= ($diners==1?'<i class="fa fa-cc-diners-club fa-4x fa-fw text-light-blue"></i>':'');
+                $carte_credito .= ($mastercard==1?'<i class="fa fa-cc-mastercard fa-4x fa-fw text-orange"></i>&nbsp;':'');
+                $carte_credito .= ($visa==1?'<i class="fa fa-cc-visa fa-4x fa-fw text-blue"></i>':'');
+            $carte_credito .= ' <br><br>
+                                    <div id="response_cc"></div>
+                                     <div class="m m-x-12 m-m-12 m-s-12 m-s-ha">
+                                        <form  method="POST" id="form_cc" name="form_cc">
+                                        <div class="form-g">
+                                            <label for="cc-number" class="control-label">'.dizionario('N_CARTA').'<small class="text-muted text-light-blue">[<span class="cc-brand"></span>]</small></label>
+                                        <input name="nomecartacc" type="hidden" id="nomecartacc">
+                                            <input name="cc_number" id="cc-number" type="tel" class="input-lg form-control cc-number err_cc" autocomplete="cc-number" placeholder="•••• •••• •••• ••••" required>
+                                        </div>
+                                        <div class="form-g">
+                                            <label for="cc-exp" class="control-label">'.dizionario('SCADENZA').'</label>
+                                            <input name="cc_expiration" id="cc-exp" type="tel" class="input-lg form-control cc-exp err_cc" autocomplete="cc-exp" placeholder="•• / ••" required>
+                                        </div>
+                                        <div class="form-g">
+                                            <label for="cc-cvc" class="control-label">'.dizionario('CODICE').'</label>
+                                            <input name="cc_codice" id="cc-cvc" type="tel" class="input-lg form-control cc-cvc err_cc" autocomplete="off" placeholder="•••" required>
+                                        </div>
+                                        <div class="form-g">
+                                            <label for="numeric" class="control-label">'.dizionario('INTESTATARIO').'</label>
+                                            <input name="cc_intestatario" id="numeric" type="text" class="input-lg form-control" required>
+                                        </div>
+                                        <div class="form-g text14">
+                                            <input name="cc_policy" id="cc_policy" type="radio" value="1" required>
+                                            <label for="cc_policy" class="control-label f-12">'.dizionario('ACCETTO_POLITICHE').' (<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</label>
+                                        </div>
+                                        <br><br>
+                                            <input type="hidden" name="id_richiesta" value="'.$id_richiesta.'">
+                                            <input type="hidden" name="idsito" value="'.$idsito.'">
+                                            <input type="hidden" name="action" value="add_carta">';
+
+                    if($tot_cc_check == 0 && $tot_pag_check== 0){
+                        $carte_credito .='<button type="submit" class="pulsante p-2 noBorder" id="bottone_cc" disabled>'.dizionario('SALVA_CARTA_CREDITO').'</button>';
+                        }elseif($tot_cc_check > 0 && $tot_pag_check == 0){
+                            $carte_credito .= '<span class="ext-green">'.dizionario('PAGAMENTOSCELTO').' Carta di Credito</span>';
+                        }elseif($tot_cc_check == 0 && $tot_pag_check > 0){
+                            $carte_credito .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                            $carte_credito .='<br><button type="submit" class="pulsante p-2 noBorder" id="bottone_cc" disabled>'.$CAMBIA_CARTA_CREDITO.'</button>';
+                    }
 
 
+            $carte_credito .=' </div>
+                                        <h2 class="validation"></h2>
+                                        </form>
+                                        
+                                        <script>
+                                            $(document).ready(function() {
+                                                $("#form_cc").submit(function(){
+
+                                                    var dati = $("#form_cc").serialize();
+                                                        $.ajaxSetup({
+                                                            headers: {
+                                                                \'X-CSRF-TOKEN\': $(\'meta[name="csrf-token"]\').attr(\'content\')
+                                                            }
+                                                        });
+                                                        $.ajax({
+                                                            url: "/salva_carta",
+                                                            type: "POST",
+                                                            data: dati,
+                                                            success: function(res){
+                                                                _alert("'.dizionario('SALVA_CARTA_CREDITO').'","'.dizionario('MSG_CARTA').'<br>'.dizionario('SCELTAPROPOSTA2').'");
+                                                                setTimeout(function(){
+                                                                        $("#form_cc").fadeOut();
+                                                                    },1000);
+                                                            },
+                                                            error: function(){
+                                                                alert("Chiamata fallita, si prega di riprovare...");
+                                                            }
+                                                            });
+                                                        return false; 
+                                                });
+                                            });
+                                        </script>';
+                $carte_credito .= '</div></div></div>';
+                $carte_credito .= ' <script src="{{asset(\'js/jquery.payment.min.js\')}}"></script>
+                                    <style type="text/css" media="screen">
+                                        .has-error input {
+                                        border-width: 4px;
+                                        border-color:#FF0000!important;
+                                        border: dotted;
+        
+                                        }
+        
+                                        .validation.text-danger:after {
+                                        content: \'Validation failed\';
+                                        }
+        
+                                        .validation.text-success:after {
+                                        content: \'Validation passed\';
+                                        }
+        
+                                    </style>
+        
+                                    <script>
+                                        jQuery(function($) {
+                                        $(\'.cc-number\').payment(\'formatCardNumber\');
+                                        $(\'.cc-exp\').payment(\'formatCardExpiry\');
+                                        $(\'.cc-cvc\').payment(\'formatCardCVC\');
+        
+                                        $.fn.toggleInputError = function(erred) {
+                                            this.parent(\'.form-g\').toggleClass(\'has-error\', erred);
+                                            return this;
+                                        };
+        
+                                        $(\'.cc-cvc\').keyup(function(e) {
+        
+        
+                                            var cardType = $.payment.cardType($(\'.cc-number\').val());
+                                            $(\'.cc-number\').toggleInputError(!$.payment.validateCardNumber($(\'.cc-number\').val()));
+                                            $(\'.cc-exp\').toggleInputError(!$.payment.validateCardExpiry($(\'.cc-exp\').payment(\'cardExpiryVal\')));
+                                            $(\'.cc-cvc\').toggleInputError(!$.payment.validateCardCVC($(\'.cc-cvc\').val(), cardType));
+                                            $(\'.cc-brand\').text(cardType);
+                                            $(\'#nomecartacc\').val(cardType);
+        
+                                            $(\'.validation\').removeClass(\'text-danger text-success\');
+                                            $(\'.validation\').addClass($(\'.has-error\').length ? \'text-danger\' : \'text-success\');
+                                            if(!$(\'.has-error\').length){
+                                            $(\'#bottone_cc\').removeAttr(\'disabled\');
+                                            }
+                                        });
+        
+                                        });
+                                    </script>';
+        }
+        return $carte_credito;
+    }
+
+    /**
+     * paypal
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @param  mixed $request
+     * @return void
+     */
+    public function paypal($idsito,$Lingua,$id_richiesta, Request $request)
+    {
+        $paypal = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+                $CAMBIA_PAYPAL        =  'Cambia il pagamento con PayPal';
+            break;
+            case"en":
+                $CAMBIA_PAYPAL        =  'Change payment with PayPal';
+            break;
+            case"fr":
+                $CAMBIA_PAYPAL        =  'Modifier le paiement avec PayPal';
+            break;
+            case"de":
+                $CAMBIA_PAYPAL        =  'Zahlung mit PayPal ändern';
+            break;
+        }
+        ### PAYPAL####
+        $pp = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_pp = DB::select($pp,['idsito' => $idsito, 'TipoPagamento' => 'PayPal', 'Abilitato' => 1 ]);
+        $tot_pp = sizeof($res_pp);
+
+        if($tot_pp > 0){
+            $row_pp = $res_pp[0];
+
+            $OrdinePP    = $row_pp->Ordine;
+            $EmailPayPal = $row_pp->EmailPayPal;
+
+            $p = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_p = DB::select($p,['idsito' => $idsito, 'pagamenti_id' => $row_pp->Id, 'lingue' => $Lingua]);
+            $row_p = $res_p[0];
+            $Pagamento_pp = $row_p->Pagamento;
+            $Descrizione_pp = $row_p->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta   = $datiG->AccontoRichiesta;
+            $AccontoLibero      = $datiG->AccontoLibero;
+            $NumeroPrenotazione = $datiG->NumeroPrenotazione;
+            $Nome               = $datiG->Nome;
+            $Cognome            = $datiG->Cognome;
+            $Email              = $datiG->Email;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+            
+            $paypal .= '<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                        <h4><b>'.$Pagamento_pp.'</b></h4>
+                        <span class="text16">'.$Descrizione_pp.'</span><br><br>
+                                <form method="POST" name="paypal_form" id="paypal_form" action="'.config('global.settings.URL_PAYPAL').'">
+                                    <input type="hidden" name="business" value="'.$EmailPayPal.'" />
+                                        <input type="hidden" name="cmd" value="_xclick" />
+                                        <input type="hidden" name="return" value="'.env('APP_URL').''.session('DIRECTORY').'/'.session('PARAM').'/index?result=cGF5cGFs" />
+                                        <input type="hidden" name="cancel_return" value="'.env('APP_URL').''.session('DIRECTORY').'/'.session('PARAM').'/index" />
+                                        <input type="hidden" name="notify_url" value="'.env('APP_URL').'reg_payment" />
+                                        <input type="hidden" name="rm" value="2" />
+                                        <input type="hidden" name="currency_code" value="EUR" />
+                                        <input type="hidden" name="lc" value="'.strtoupper($Lingua).'" />
+                                        <input type="hidden" name="cs" value="0" />
+                                        <input type="hidden" name="item_name" value="'.dizionario('OFFERTA').' nr. '.$NumeroPrenotazione.' | '.session('NomeCliente').'" />
+                                        <input type="hidden" name="image_url" value="'.config('global.settings.BASE_URL_IMG').'uploads/loghi_siti/'.session('LOGO').'">
+
+                                        <input type="hidden" name="item_number" value="'.$NumeroPrenotazione.'#'.$idsito.'#'.$id_richiesta.'" />
+
+                                        <input type="hidden" name="first_name" value="'.$Nome.'" />
+                                        <input type="hidden" name="last_name" value="'.$Cognome.'" />
+                                        <input type="hidden" name="country" value="'.strtoupper($Lingua).'" />
+                                        <input type="hidden" name="email" value="'.$Email.'" />
+                                        <input type="hidden" name="_token" value="'.csrf_token().'" />';
+
+                                    if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                        $paypal .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="t40 tcolor">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                        $paypal .= '<input type="hidden" name="amount" value="'.number_format(($PrezzoPC*$AccontoRichiesta/100) ,2,'.','').'" />';
+                                    }
+                                    if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                        $paypal .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="t40 tcolor">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                        $paypal .= '<input type="hidden" name="amount" value="'.number_format(($PrezzoPC*$AccontoPercentuale/100) ,2,'.','').'" />';
+                                    }
+                                    if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                        $paypal .= '<b>'.$ACCONTO.'</b>:  <b class="t40 tcolor">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                        $paypal .= '<input type="hidden" name="amount" value="'.number_format($AccontoLibero ,2,'.','').'" />';
+                                    }
+                                    if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                        if($AccontoImporto >= 1) {
+                                            $paypal .= '<b>'.$ACCONTO.'</b>:  <b class="t40 tcolor">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                            $paypal .= '<input type="hidden" name="amount" value="'.number_format($AccontoImporto ,2,'.','').'" />';
+                                        }
+                                    }
+
+                    $paypal .= ' <label class="control-label f-12">
+                                <input name="pp_policy" id="pp_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')" />
+                                '.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small>
+                                </label>
+                                <div class="clearfix"></div>';
+                    if($EmailPayPal !=''){
+                            $paypal .= ' <img src="/img/paypal.png" class="img-responsive" style="width:25%" />
+                                        <div class="clearfix"></div>';
+                            if($tot_cc_check == 0 && $tot_pag_check== 0){
+                                $paypal .= '<button type="submit" class="pulsante p-2 noBorder"><i class="fab fa-paypal fa-lg"></i> '.dizionario('PAGA_PAYPAL').'</button>';
+                            }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                            if($TipoPagamento == 'PayPal'){
+                                $paypal .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' PayPal</span>';
+                            }else{
+                                $paypal .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                $paypal .= '<br><button type="submit" class="pulsante p-2 noBorder"><i class="fab fa-paypal fa-lg"></i> '.$CAMBIA_PAYPAL.'</button>';
+                            }
+                            }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                                $paypal .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                $paypal .= '<br><button type="submit" class="pulsante p-2 noBorder"><i class="fab fa-paypal fa-lg"></i> '.$CAMBIA_PAYPAL.'</button>';
+                            }
+                    }else{
+                    $paypal .= '<small class="text-red">Email di riferimento PayPal, non è stata inserita!</small>';
+                    }
+                    $paypal .= '</form>';
+                    $paypal .= '</div></div></div>';
+                if($request->result!='' && base64_decode($request->result)=='paypal') {
+
+                    $paypal .= '<script>$("#paypal_form").fadeOut();</script>';
+
+                }
+
+        }
+        return $paypal;
+    }
+
+    /**
+     * gateway_bancario
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @param  mixed $request
+     * @return void
+     */
+    public function gateway_bancario($idsito,$Lingua,$id_richiesta, Request $request)
+    {
+        $gateway_bancario = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+                $CAMBIA_CARTA_CREDITO =  'Cambia il pagamento con Carta di Credito ';
+            break;
+            case"en":
+                $CAMBIA_CARTA_CREDITO =  'Change your credit card payment ';
+            break;
+            case"fr":
+                $CAMBIA_CARTA_CREDITO =  'Modifier votre paiement par carte de crédit ';
+            break;
+            case"de":
+                $CAMBIA_CARTA_CREDITO =  'Ändern Sie Ihre Kreditkartenzahlung ';
+            break;
+        }
+
+        ### GATEWAY BANCARIO ####
+        $gb = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_gb = DB::select($gb,['idsito' => $idsito, 'TipoPagamento' => 'Gateway Bancario', 'Abilitato' => 1 ]);
+        $tot_gb = sizeof($res_gb);
+
+        if($tot_gb > 0){
+            $row_gb = $res_gb[0];
 
 
+            $OrdineGB   = $row_gb->Ordine;
+            $serverURL  = $row_gb->serverURL;
+            $tid        = $row_gb->tid;
+            $kSig       = $row_gb->kSig;
+            $ShopUserRef = $row_gb->ShopUserRef;
+
+            $cgb = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_gb = DB::select($cgb,['idsito' => $idsito, 'pagamenti_id' => $row_gb->Id, 'lingue' => $Lingua]);
+            $row_gb = $res_gb[0];
+            $Pagamento_gb = $row_gb->Pagamento;
+            $Descrizione_gb = $row_gb->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta   = $datiG->AccontoRichiesta;
+            $AccontoLibero      = $datiG->AccontoLibero;
+            $NumeroPrenotazione = $datiG->NumeroPrenotazione;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+            $gateway_bancario .= '<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                                    <h4><b>'.$Pagamento_gb.'</b></h4>
+                                    <span class="text16">'.$Descrizione_gb.'</span><br><br>
+                                    <form method="post" name="payway_form" id="payway_form" action="/payway">
+                                        <input type="hidden" name="serverURL" value="'.$serverURL.'">
+                                        <input type="hidden" name="tid" value="'.$tid.'">
+                                        <input type="hidden" name="kSig" value="'.$kSig.'">
+                                        <input type="hidden" name="ShopUserRef" value="'.$ShopUserRef.'">
+                                        <input type="hidden" name="landID" value="'.strtoupper($Lingua).'" />
+                                        <input type="hidden" name="shopID" value="'.$NumeroPrenotazione.'" />
+                                        <input type="hidden" name="IdSito" value="'.$idsito.'" />
+                                        <input type="hidden" name="IdRichiesta" value="'.$id_richiesta.'" />
+                                        <input type="hidden" name="v" value="'.session('PARAM').'" />
+                                        <input type="hidden" name="url_back" value="'.env('APP_URL').session('DIRECTORY').'/'.session('PARAM').'/index?result=cGF5d2F5">
+                                        <input type="hidden" name="_token" value="'.csrf_token().'" />';
+
+                                    if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                        $gateway_bancario .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                        $gateway_bancario .= '<input type="hidden" name="amount" value="'.(($PrezzoPC*$AccontoRichiesta/100)).'" />';
+                                    }
+                                    if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                        $gateway_bancario .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                        $gateway_bancario .= '<input type="hidden" name="amount" value="'.(($PrezzoPC*$AccontoPercentuale/100)).'" />';
+                                    }
+                                    if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                        $gateway_bancario .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                        $gateway_bancario .= '<input type="hidden" name="amount" value="'.($AccontoLibero).'" />';
+                                    }
+                                    if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                        if($AccontoImporto >= 1) {
+                                            $gateway_bancario .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                            $gateway_bancario .= '<input type="hidden" name="amount" value="'.($AccontoImporto).'" />';
+                                        }
+                                    }
+
+                $gateway_bancario .= '<img src="'.config('global.settings.BASE_URL_IMG').'img/payway_pwsmage.jpg" class="img-responsive" style="width:25%"/>
+                                    <div class="clearfix m-2"></div> ';
+                $gateway_bancario .= '<label class="control-label f-12">
+                                        <input name="gb_policy" id="gb_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')" />
+                                        '.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small>
+                                        </label>
+                                        <div class="clearfix"></div> ';
+            if($kSig !=''){
+
+                if($tot_cc_check == 0 && $tot_pag_check== 0){
+                    $gateway_bancario .='<button type="submit" class="pulsante p-2 noBorder">'.dizionario('PAGA_CARTA_CREDITO').' PayWay</button>';
+                }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                    if($TipoPagamento == 'Gateway Bancario'){
+                    $gateway_bancario .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Gateway Bancario PayWay</span>';
+                    }else{
+                    $gateway_bancario .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                    $gateway_bancario .='<br><button type="submit" class="pulsante p-2 noBorder">'.$CAMBIA_CARTA_CREDITO.' PayWay</button>';
+                    }
+                }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                    $gateway_bancario .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                    $gateway_bancario .='<br><button type="submit" class="pulsante p-2 noBorder">'.$CAMBIA_CARTA_CREDITO.' PayWay</button>';
+                }
+
+            }else{
+            $gateway_bancario .= '<small class="text-red">API Key di riferimento PayWay non è stata inserita!</small>';
+            }
+                $gateway_bancario .= '</form>';
+                $gateway_bancario .= '</div></div></div>';
+        }
+        if($request->result!='' && base64_decode($request->result)=='payway') {
+
+            $sel = 'SELECT TransId FROM hospitality_transazioniId_bcc WHERE id_richiesta = :id_richiesta';
+            $qy   = DB::select($sel,['id_richiesta' => $id_richiesta]);
+            $recs = sizeof($qy);
+            if($recs > 0){
+                $rows  = $qy[0];
+                $payment_id = $rows->TransId;
+            }
+            require(public_path('IGFS_CG_API/init/IgfsCgVerify.php'));
+            $verify            = new IgfsCgVerify();
+            $verify->serverURL = $serverURL; //url test
+            $verify->tid       = $tid;
+            $verify->kSig      = $kSig;
+            $verify->shopID    = $NumeroPrenotazione; // stesso valore della chiamata init
+            $verify->paymentID = $payment_id;// NOTA: Leggo il paymentID rilasciato in fase di init es da database
+            $verify->execute();
+
+            //il webservice ha risposto
+            if($verify->rc == 'IGFS_000' || $verify->rc == 'IGFS_909'){
+            // TUTTO OK
+
+                $se = 'SELECT * FROM hospitality_altri_pagamenti WHERE id_richiesta = :id_richiesta';
+                $q   = DB::select($se,['id_richiesta' => $id_richiesta]);
+                $rec = sizeof($q);
+                
+                if($rec == 0){
+
+                        DB::table('hospitality_altri_pagamenti')->insert(
+                                                                            [
+                                                                                'idsito'           => $idsito,
+                                                                                'id_richiesta'     => $id_richiesta,
+                                                                                'TipoPagamento'    => 'Gateway Bancario',
+                                                                                'CRO'              => $payment_id,
+                                                                                'data_inserimento' => date('Y-m-d')
+                                                                            ]
+                                                                        );
+                }else{
+                    $row = $q[0];
+                    if($row->TipoPagamento!= 'Gateway Bancario'){
+                        DB::table('hospitality_altri_pagamenti')->where('Id','=',$row->Id)->where('id_richiesta','=',$id_richiesta)->update(
+                                                                                                                                                [
+                                                                                                                                                    'TipoPagamento'    => 'Gateway Bancario',
+                                                                                                                                                    'CRO'              => $payment_id,
+                                                                                                                                                    'data_inserimento' => date('Y-m-d')
+                                                                                                                                                ]
+                                                                                                                                            );
+                    }
+                }
+
+            }else{
+                $gateway_bancario .= $verify->rc.' '.$verify->errorDesc;
+            }
+        }
+        return $gateway_bancario;
+    }
 
 
+    /**
+     * gateway_bancario_virtualpay
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @param  mixed $request
+     * @return void
+     */
+    public function gateway_bancario_virtualpay($idsito,$Lingua,$id_richiesta, Request $request)
+    {
+        $gateway_bancario_virtualpay = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+                $CAMBIA_CARTA_CREDITO =  'Cambia il pagamento con Carta di Credito ';
+            break;
+            case"en":
+                $CAMBIA_CARTA_CREDITO =  'Change your credit card payment ';
+            break;
+            case"fr":
+                $CAMBIA_CARTA_CREDITO =  'Modifier votre paiement par carte de crédit ';
+            break;
+            case"de":
+                $CAMBIA_CARTA_CREDITO =  'Ändern Sie Ihre Kreditkartenzahlung ';
+            break;
+        }
+
+        ### GATEWAY BANCARIO VIRTUAL PAY####
+        $gbvp = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_gbvp = DB::select($gbvp,['idsito' => $idsito, 'TipoPagamento' => 'Gateway Bancario Virtual Pay', 'Abilitato' => 1 ]);
+        $tot_gbvp = sizeof($res_gbvp);
+
+        if($tot_gbvp > 0){
+            $row_gbvp = $res_gbvp[0];
 
 
+            $OrdineGBVP  = $row_gbvp->Ordine;
+            $URL         = $row_gbvp->serverURL;
+            $ABI         = $row_gbvp->tid;
+            $MERCHANT_ID = $row_gbvp->kSig;
+            $EMAIL       = $row_gbvp->ShopUserRef;
+
+            $cgbvp            = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_cgbvp        = DB::select($cgbvp,['idsito' => $idsito, 'pagamenti_id' => $row_gbvp->Id, 'lingue' => $Lingua]);
+            $row_cgbvp        = $res_cgbvp[0];
+            $Pagamento_gbvp   = $row_cgbvp->Pagamento;
+            $Descrizione_gbvp = $row_cgbvp->Descrizione;
+
+            $KEY = config('global.settings.KEY_VIRTUALPAY');
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta   = $datiG->AccontoRichiesta;
+            $AccontoLibero      = $datiG->AccontoLibero;
+            $NumeroPrenotazione = $datiG->NumeroPrenotazione;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+            $gateway_bancario_virtualpay .= '<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                                            <h4><b>'.$Pagamento_gbvp.'</b></h4>
+                                            <span class="text16">'.$Descrizione_gbvp.'</span><br><br>
+                                            <form method="post" name="SENDORDINE" id="virtualpay_form" action="'.$URL.'">
+                                            <input type="hidden" name="DIVISA" value="EUR">
+                                            <input type="hidden" name="ABI" value="'.$ABI.'">
+                                            <input type="hidden" name="MERCHANT_ID" value="'.$MERCHANT_ID.'">
+                                            <input type="hidden" name="EMAIL" value="'.$EMAIL.'">
+                                            <input type="hidden" name="LINGUA" value="'.strtoupper($Lingua).'" />
+                                            <input type="hidden" name="ORDER_ID" value="'.$NumeroPrenotazione.'" />
+                                            <input type="hidden" name="URLOK" value="'.env('APP_URL').'virtualpayOK?v='.session('PARAM').'&dir='.session('DIRECTORY').'">
+                                            <input type="hidden" name="URLKO" value="'.env('APP_URL').'virtualpayKO?v='.session('PARAM').'&dir='.session('DIRECTORY').'">
+                                            <input type="hidden" name="_token" value="'.csrf_token().'" />';
+
+                                            if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                                                $gateway_bancario_virtualpay .= '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                                                $importo = number_format(($PrezzoPC*$AccontoRichiesta/100) ,2,',','');
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="IMPORTO" value="'.$importo.'" />';
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="ITEMS" value="'.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.'">';
+                                                $CALCMAC = $MERCHANT_ID.$NumeroPrenotazione.$importo.'EUR'.$ABI.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.''.$KEY;
+                                                $CALCMAC_TMP = hash('sha256',$CALCMAC);
+                                                $MAC = strtoupper($CALCMAC_TMP);
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="MAC" value="'.$MAC.'">';
+
+                                            }
+                                            if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                                                $gateway_bancario_virtualpay .= '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                                                $importo = number_format(($PrezzoPC*$AccontoPercentuale/100) ,2,',','');
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="IMPORTO" value="'.$importo.'" />';
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="ITEMS" value="'.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.'">';
+                                                $CALCMAC = $MERCHANT_ID.$NumeroPrenotazione.$importo.'EUR'.$ABI.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.$KEY;
+                                                $CALCMAC_TMP = hash('sha256',$CALCMAC);
+                                                $MAC = strtoupper($CALCMAC_TMP);
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="MAC" value="'.$MAC.'">';
+                                            }
+                                            if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                                                $gateway_bancario_virtualpay .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                                                $importo = number_format($AccontoLibero ,2,',','');
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="IMPORTO" value="'.$importo.'" />';
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="ITEMS" value="'.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.'">';
+                                                $CALCMAC = $MERCHANT_ID.$NumeroPrenotazione.$importo.'EUR'.$ABI.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.$KEY;
+                                                $CALCMAC_TMP = hash('sha256',$CALCMAC);
+                                                $MAC = strtoupper($CALCMAC_TMP);
+                                                $gateway_bancario_virtualpay .= '<input type="hidden" name="MAC" value="'.$MAC.'">';
+                                            }
+                                            if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                                                if($AccontoImporto >= 1) {
+                                                    $gateway_bancario_virtualpay .= '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                                                    $importo = number_format($AccontoImporto ,2,',','');
+                                                    $gateway_bancario_virtualpay .= '<input type="hidden" name="IMPORTO" value="'.$importo.'" />';
+                                                    $gateway_bancario_virtualpay .= '<input type="hidden" name="ITEMS" value="'.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.'">';
+                                                    $CALCMAC = $MERCHANT_ID.$NumeroPrenotazione.$importo.'EUR'.$ABI.$NumeroPrenotazione.'^Prenotazione soggiorno^1^'.$importo.$KEY;
+                                                    $CALCMAC_TMP = hash('sha256',$CALCMAC);
+                                                    $MAC = strtoupper($CALCMAC_TMP);
+                                                    $gateway_bancario_virtualpay .= '<input type="hidden" name="MAC" value="'.$MAC.'">';
+                                                }else{
+                                                    $gateway_bancario_virtualpay .= '<b>'.dizionario('CARTACREDITOGARANZIA').'</b><br><br>';
+                                                }
+                                            }
+
+            $gateway_bancario_virtualpay .= '<img src="'.config('global.settings.BASE_URL_IMG').'img/virtualpay_form.jpg" class="img-responsive" style="width:25%"/>
+                                            <div class="clearfix m-2"></div>  ';
+
+            $gateway_bancario_virtualpay .= '<label class="control-label f-12">
+                                                <input name="gbvp_policy" id="gbvp_policy" type="radio" value="1" required />
+                                                '.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small>
+                                            </label>
+                                            <div class="clearfix"></div> ';
 
 
+            if($MERCHANT_ID !=''){
+
+                if($tot_cc_check == 0 && $tot_pag_check== 0){
+                    $gateway_bancario_virtualpay .='<button type="submit" class="pulsante p-2 noBorder">'.dizionario('PAGA_CARTA_CREDITO').' Virtual Pay</button>';
+                }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                    if($TipoPagamento == 'Gateway Bancario Virtual Pay'){
+                    $gateway_bancario_virtualpay .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Gateway Bancario Virtual Pay</span>';
+                    }else{
+                    $gateway_bancario_virtualpay .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                    $gateway_bancario_virtualpay .='<br><button type="submit" class="pulsante p-2 noBorder">'.$CAMBIA_CARTA_CREDITO.' Virtual Pay</button>';
+                    }
+                }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                $gateway_bancario_virtualpay .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                $gateway_bancario_virtualpay .='<br><button type="submit" class="pulsante p-2 noBorder">'.$CAMBIA_CARTA_CREDITO.' Virtual Pay</button>';
+                }
+
+            }else{
+                $gateway_bancario_virtualpay .= '<small class="text-red">MERCHANT ID di riferimento Virtual Pay non è stato inserito!</small>';
+            }
+                $gateway_bancario_virtualpay .= '</form>';
+                $gateway_bancario_virtualpay .= '</div></div></div>';
+
+        }
+        return $gateway_bancario_virtualpay;
+    }
+
+    
+    /**
+     * stripe
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @param  mixed $request
+     * @return void
+     */
+    public function stripe($idsito,$Lingua,$id_richiesta, Request $request)
+    {
+        $stripe = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+              $CAMBIA_STRIPE        =  'Cambia il pagamento con STRIPE';
+            break;
+            case"en":
+              $CAMBIA_STRIPE        =  'Change payment with STRIPE';
+            break;
+            case"fr":
+              $CAMBIA_STRIPE        =  'Modifier le paiement avec STRIPE';
+            break;
+            case"de":
+              $CAMBIA_STRIPE        =  'Zahlung ändern mit STRIPE';
+            break;
+          }
+            ### STRIPE ####
+            $ss = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+            $res_ss = DB::select($ss,['idsito' => $idsito, 'TipoPagamento' => 'Stripe', 'Abilitato' => 1 ]);
+            $tot_ss = sizeof($res_ss);
+
+            if($tot_ss > 0){
+                $row_ss = $res_ss[0];
+
+                $OrdineSS    = $row_ss->Ordine;
+                $ApiKeyStripe = $row_ss->ApiKeyStripe;
+
+                $s = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+                $res_s =  DB::select($s,['idsito' => $idsito, 'pagamenti_id' => $row_ss->Id, 'lingue' => $Lingua]);
+                $row_s = $res_s[0];
+                $Pagamento_ss = $row_s->Pagamento;
+                $Descrizione_ss = $row_s->Descrizione;
+
+                $ACCONTO = dizionario('ACCONTO');
+
+                $datiG = Session::get('dati_h_guest', []);
+                $AccontoRichiesta   = $datiG->AccontoRichiesta;
+                $AccontoLibero      = $datiG->AccontoLibero;
+                $NumeroPrenotazione = $datiG->NumeroPrenotazione;
+    
+                $datiP = Session::get('dati_p_guest', []);
+                $AccontoPercentuale = $datiP->AccontoPercentuale;
+                $AccontoImporto     = $datiP->AccontoImporto;
+                $PrezzoPC           = $datiP->PrezzoP;
+
+                if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                    $stripe_txt = '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                    $stripe_value = number_format(($PrezzoPC*$AccontoRichiesta/100) ,2,'','');
+                    }
+                    if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                        $stripe_txt = '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                        $stripe_value = number_format(($PrezzoPC*$AccontoPercentuale/100) ,2,'','');
+                    }
+                    if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                        $stripe_txt = '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                        $stripe_value = number_format($AccontoLibero ,2,'','');
+                    }
+                    if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                        if($AccontoImporto >= 1) {
+                            $stripe_txt = '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                            $stripe_value = number_format($AccontoImporto ,2,'','');
+                        }else{
+                            $stripe_txt = '<b>'.dizionario('CARTACREDITOGARANZIA').'</b><br><br>';
+                        }
+                    }
+
+                $stripe .= '<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                            <h4><b>'.$Pagamento_ss.'</b></h4>
+                            <span class="text16">'.$Descrizione_ss.'</span><br><br>
+                            '.$stripe_txt.'
+                                <img src="'.config('global.settings.BASE_URL_IMG').'img/stripe.png" class="img-responsive" style="width:25%" />
+                                <div class="clearfix m-2"></div> ';
+
+                $stripe .= '
+                            <label class="control-label f-12">
+                                <input name="ss_policy" id="ss_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')" />
+                                '.dizionario('ACCETTO_POLITICHE').' <small>(<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</small>
+                            </label>
+                            <div class="c10"></div>';
+                            $selSLink = "SELECT linkStripe FROM hospitality_rel_pagamenti_preventivi WHERE idsito = :idsito AND id_richiesta = :id_richiesta AND GBS = :GBS";
+                            $risSLink =  DB::select($selSLink,['idsito' => $idsito, 'id_richiesta' => $id_richiesta, 'GBS' => 1]);
+                            if(sizeof($risSLink)>0){
+                                $rowSLink = $risSLink[0];
+                                if($rowSLink->linkStripe){
+                                        if($ApiKeyStripe !=''){
+                                                $stripe .= '<div class="clearfix"></div>';
+                                                if($tot_cc_check == 0 && $tot_pag_check== 0){
+                                                    $stripe .= '<a id="card-button" class="pulsante p-2 noBorder" onclick="check_policy();" target="_blank">Paga con STRIPE </a>';
+                                                }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                                                    if($TipoPagamento == 'Stripe'){
+                                                        $stripe .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Stripe</span>';
+                                                    }else{
+                                                        $stripe .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                                        $stripe .= '<br><button id="card-button" class="pulsante p-2 noBorder" onclick="check_policy();" target="_blank">'.$CAMBIA_STRIPE.' </button>';
+                                                    }
+                                                }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                                                    $stripe .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                                    $stripe .= '<br><button id="card-button" class="pulsante p-2 noBorder" onclick="check_policy();" target="_blank">'.$CAMBIA_STRIPE.' </button>';
+                                                }
+                                        }else{
+                                            $stripe .= '<small class="text-red">API di riferimento Stripe, non è stata inserita!</small>';
+                                        }
+                                    }else{
+                                        $stripe .= '<small class="text-red">Manca il link creato dalla dashboard di Stripe; non è stato inserito!</small>';
+                                    }
+                            }
+
+                            $stripe .= ' 
+                                <script>
+                                    function check_policy(){
+
+                                            if($("#ss_policy").is(":checked")){   
+                                                $("#card-button").attr("href","'.$rowSLink->linkStripe.'");  
+                                            setTimeout(function(){
+                                                    location.href="'.env('APP_URL').session('DIRECTORY').'/'.session('PARAM').'/index/?result=c3RyaXBl";
+                                                },1000);
+                                                
+                                            }else{
+                                                alert(\''.dizionario('ACCETTO_POLITICHE').'\');
+                                                return false;
+                                            }
+                                            
+                                    }
+                                    $(document).ready(function(){
+                                        $(".stripe-button-el").attr("style","display:none");
+                                    })   
+                                </script>
+                                <div class="clearfix"></div>';
+                    $stripe .='</div></div></div>';
+
+                    if($request->result!='' && base64_decode($request->result)=='stripe') {
+
+                    $stripe .= '<script>$("#card-button").fadeOut();</script>';
+
+
+                    $stripeToken            = $rowSLink->linkStripe;
+
+
+                            $se = 'SELECT * FROM hospitality_altri_pagamenti WHERE id_richiesta = :id_richiesta';
+                            $q   = DB::select($se,['id_richiesta' => $id_richiesta]);
+                            $rec = sizeof($q);
+                            if($rec == 0){
+                                    DB::table('hospitality_altri_pagamenti')->insert(
+                                                                                        [
+                                                                                            'idsito'           => $idsito,
+                                                                                            'id_richiesta'     => $id_richiesta,
+                                                                                            'TipoPagamento'    => 'Stripe',
+                                                                                            'CRO'              => $stripeToken,
+                                                                                            'data_inserimento' => date('Y-m-d')
+                                                                                        ]
+                                                                                    );
+                            }else{
+                                $row = $q[0];
+                                if($row->TipoPagamento!= 'Stripe'){
+                                    DB::table('hospitality_altri_pagamenti')->where('Id','=',$row->Id)->where('id_richiesta','=',$id_richiesta)->update(
+                                                                                                                                                            [
+                                                                                                                                                                'TipoPagamento'    => 'Stripe',
+                                                                                                                                                                'CRO'              => $stripeToken,
+                                                                                                                                                                'data_inserimento' => date('Y-m-d')
+                                                                                                                                                            ]
+                                                                                                                                                        );
+                                }
+                            }
+
+
+                    }
+
+            }
+
+        return $stripe; 
+    }
+    
+    /**
+     * nexi
+     *
+     * @param  mixed $idsito
+     * @param  mixed $Lingua
+     * @param  mixed $id_richiesta
+     * @param  mixed $request
+     * @return void
+     */
+    public function nexi($idsito,$Lingua,$id_richiesta, Request $request)
+    {
+        $nexi = '';
+        $array_pag     = $this->chek_pagamento_altro($idsito,$id_richiesta);
+        $tot_pag_check = $array_pag[0];
+        $TipoPagamento = $array_pag[1];
+        $tot_cc_check  = $this->chek_pagamento_cc($idsito,$id_richiesta);
+
+        switch($Lingua){
+            case"it":
+              $CAMBIA_NEXI        =  'Cambia il pagamento con NEXI';
+            break;
+            case"en":
+              $CAMBIA_NEXI        =  'Change payment with NEXI';
+            break;
+            case"fr":
+              $CAMBIA_NEXI        =  'Modifier le paiement avec NEXI';
+            break;
+            case"de":
+              $CAMBIA_NEXI        =  'Zahlung ändern mit NEXI';
+            break;
+          }
+        ### NEXI ####
+        $nx = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato  AND TipoPagamento = :TipoPagamento";
+        $res_nx = DB::select($nx,['idsito' => $idsito, 'TipoPagamento' => 'Nexi', 'Abilitato' => 1 ]);
+        $tot_nx = sizeof($res_nx);
+
+        if($tot_nx > 0){
+            $row_nx = $res_nx[0]; 
+
+            $OrdineNX        = $row_nx->Ordine;
+            $ApiKeyNexi      = $row_nx->ApiKeyNexi;
+            $SegretKeyNexi   = $row_nx->SegretKeyNexi;
+            
+
+
+            $x = "SELECT * FROM hospitality_tipo_pagamenti_lingua WHERE idsito = :idsito AND pagamenti_id = :pagamenti_id AND lingue = :lingue";
+            $res_x = DB::select($x,['idsito' => $idsito, 'pagamenti_id' => $row_nx->Id, 'lingue' => $Lingua]);
+            $row_x = $res_x[0];
+            $Pagamento_nx   = $row_x->Pagamento;
+            $Descrizione_nx = $row_x->Descrizione;
+
+            $ACCONTO = dizionario('ACCONTO');
+
+            $datiG = Session::get('dati_h_guest', []);
+            $AccontoRichiesta   = $datiG->AccontoRichiesta;
+            $AccontoLibero      = $datiG->AccontoLibero;
+            $NumeroPrenotazione = $datiG->NumeroPrenotazione;
+
+            $datiP = Session::get('dati_p_guest', []);
+            $AccontoPercentuale = $datiP->AccontoPercentuale;
+            $AccontoImporto     = $datiP->AccontoImporto;
+            $PrezzoPC           = $datiP->PrezzoP;
+
+
+            if($AccontoRichiesta != 0 && $AccontoLibero == 0) {
+                $nexi_txt = '<b>'.$ACCONTO.'</b>: '.$AccontoRichiesta.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoRichiesta/100),2,',','.').'</b><br><br>';
+                $nexi_value = number_format(($PrezzoPC*$AccontoRichiesta/100) ,2,'','');
+                }
+                if($AccontoPercentuale != 0 && $AccontoImporto == 0) {
+                    $nexi_txt = '<b>'.$ACCONTO.'</b>: '.$AccontoPercentuale.' %  - <b class="text30 text-red">€. '.number_format(($PrezzoPC*$AccontoPercentuale/100),2,',','.').'</b><br><br>';
+                    $nexi_value = number_format(($PrezzoPC*$AccontoPercentuale/100) ,2,'','');
+                }
+                if($AccontoRichiesta == 0 && $AccontoLibero != 0) {
+                    $nexi_txt = '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoLibero,2,',','.').'</b><br><br>';
+                    $nexi_value = number_format($AccontoLibero ,2,'','');
+                }
+                if($AccontoPercentuale == 0 && $AccontoImporto != 0) {
+                    if($AccontoImporto >= 1) {
+                        $nexi_txt = '<b>'.$ACCONTO.'</b>:  <b class="text30 text-red">€. '.number_format($AccontoImporto,2,',','.').'</b><br><br>';
+                        $nexi_value = number_format($AccontoImporto ,2,'','');
+                    }else{
+                        $nexi_txt = '<b>'.dizionario('CARTACREDITOGARANZIA').'</b><br><br>';
+                    }
+                } 
+
+                $nexi .= '<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 "><div class="card min-height-card-pay m-1 col-eq-height"><div class="card-body">
+                            <h4><b>'.$Pagamento_nx.'</b></h4>
+                            <span class="text16">'.$Descrizione_nx.'</span><br><br>
+                            '.$nexi_txt.'
+                                <img src="'.config('global.settings.BASE_URL_IMG').'img/LogoNexi_XPay.jpg" class="img-responsive" style="width:25%"/>
+                                <div class="clearfix m-2"></div> ';
+
+                $ALIAS = $ApiKeyNexi;
+                $CHIAVESEGRETA =   $SegretKeyNexi;
+
+
+                $nexi .= '  
+                                <form method="POST" name="xpay" action="'.config('global.settings.URL_NEXI').'">
+                                <input type="hidden" name="_token" value="'.csrf_token().'" />
+                                <input name="ne_policy" id="ne_policy" type="radio" value="1" required oninvalid="this.setCustomValidity(\'Questo campo è obbligatorio\')" onchange="this.setCustomValidity(\'\')">
+                                <label for="ne_policy" class="control-label f-12">'.dizionario('ACCETTO_POLITICHE').' (<a href="#condizioni">'.dizionario('LEGGI_POLITICHE').'</a>)</label>
+                                <div class="ca10"></div> 
+                                <div id="politiche_ne" style="display:none">
+                                <div class="t14">'.dizionario('INFORMATIVA_PRIVACY').'</div>
+                            </div>
+                                <div class="ca20"></div> ';
+
+                                $codTrans = $idsito.'_'.$id_richiesta.'_' . date('YmdHis');
+                                //$codTrans = "TESTPS_" . date('YmdHis');
+                                $divisa = "EUR";
+                                $importo = $nexi_value;
+                                $merchantServerUrl = env('APP_URL');
+                                // Calcolo MAC
+                                $mac = sha1('codTrans=' . $codTrans . 'divisa=' . $divisa . 'importo=' . $importo . $CHIAVESEGRETA);
+
+
+                                // Parametri obbligatori
+                                $obbligatori = array(
+                                    'alias' => $ALIAS,
+                                    'importo' => $importo,
+                                    'divisa' => $divisa,
+                                    'codTrans' => $codTrans,
+                                    'url' =>  $merchantServerUrl.'esito?v='.session('PARAM').'&dir='.session('DIRECTORY'),
+                                    'url_back' => $merchantServerUrl.'annullo?v='.session('PARAM').'&dir='.session('DIRECTORY'),
+                                    'mac' => $mac, 
+                                    'typology' => (isset($request->typology)?'DEFERRED':'IMMEDIATE'), // Imposta il pagamento differito o immediato 
+                                );
+
+                                // Parametri facoltativi
+                                $facoltativi = array(
+                                );
+
+                                $requestParams = array_merge($obbligatori, $facoltativi);
+
+                                foreach ($requestParams as $name => $value) { 
+                                    $nexi .= '<input type="hidden" name="'.$name.'" value="'.htmlentities($value).'" />'."\r\n";
+                                }
+                                    
+                                if($ApiKeyNexi !=''){
+                                    $nexi .= '<div class="clearfix"></div>';
+                                    if($tot_cc_check == 0 && $tot_pag_check == 0){
+                                        $nexi .= ' <button type="submit"  class="pulsante p-2 noBorder" id="nexi-button">'.dizionario('PAGA_NEXI').'</button>';
+                                    }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
+                                        if($TipoPagamento == 'Nexi'){
+                                        $nexi .= '<span class="text-green">'.dizionario('PAGAMENTOSCELTO').' Nexi</span>';
+                                        }else{
+                                        $nexi .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                        $nexi .= '<br><button type="submit"  class="pulsante p-2 noBorder" id="nexi-button">'.$CAMBIA_NEXI.'</button>';
+                                        }
+                                    }elseif($tot_pag_check == 0 && $tot_cc_check > 0){
+                                        $nexi .= '<span class="text-red">'.dizionario('PROPOSTAPAGAMENTOSCELTO').'</span>';
+                                        $nexi .= '<br><button type="submit"  class="pulsante p-2 noBorder" id="nexi-button">'.$CAMBIA_NEXI.'</button>';
+                                    } 
+                            }else{
+                                $nexi .= '<small class="text-red">API di riferimento Nexi, non è stata inserita!</small>';
+                            }
+                                    
+                    $nexi .= '</form>';
+                    $nexi .= '</div></div></div>';
+                        if($request->result!='' && base64_decode($request->result)=='nexi') {
+
+                        $nexi .= '<script>$("#nexi-button").fadeOut();</script>';
+                    
+                        }
+
+        }
+
+        return $nexi;
+    }
 
 
     /**
@@ -1137,6 +2666,7 @@ class ProController extends Controller
               $IMPOSTO                        = 'Incluso in questa proposta';
               $A_PERCENTUALE                  = 'A percentuale';
               $prezzoServizio                 = 'Prezzo del servizio';
+              $LabelPrezzoServizio            = 'Prezzo del servizio';
               $textInfoSconto                 = 'Lo sconto viene applicato solo sul totale della proposta che la struttura ricettiva, al momento della creazione del preventivo ha compilato; qualsiasi modifica apportata aggiungendo od eliminando servizi aggiuntivi, non agirà sulla cifra delle sconto!';
               $PrezzoServizio                 = 'Prezzo Servizio';
               $NumeroGiorni                   = 'Numero Giorni';
@@ -1169,6 +2699,7 @@ class ProController extends Controller
               $IMPOSTO                        = 'Included in this proposal';
               $A_PERCENTUALE                  = 'By percentage';
               $prezzoServizio                 = 'Price of the service';
+              $LabelPrezzoServizio            = 'Price of the service';
               $textInfoSconto                 = 'The discount is applied only to the total of the proposal that the accommodation facility, at the time of creating the quote, has compiled; any modifications made by adding or removing additional services will not affect the discount amount!';
               $PrezzoServizio                 = 'Price Service';
               $NumeroGiorni                   = 'Number of Days';
@@ -1201,6 +2732,7 @@ class ProController extends Controller
               $IMPOSTO                        = 'Inclus dans cette proposition';
               $A_PERCENTUALE                  = 'Par pourcentage';
               $prezzoServizio                 = 'Prix ​​de la prestation';
+              $LabelPrezzoServizio            = 'Prix du service';
               $textInfoSconto                 = 'La remise est appliquée uniquement sur le total de la proposition que l\'établissement d\'hébergement, au moment de la création du devis, a compilé ; toute modification apportée en ajoutant ou en supprimant des services supplémentaires n\'affectera pas le montant de la remise!';
               $PrezzoServizio                 = 'Service de prix';
               $NumeroGiorni                   = 'Nombre de jours';
@@ -1233,6 +2765,7 @@ class ProController extends Controller
               $IMPOSTO                        = 'In diesem Vorschlag enthalten';
               $A_PERCENTUALE                  = 'In Prozent';
               $prezzoServizio                 = 'Preis der Dienstleistung';
+              $LabelPrezzoServizio            = 'Preis der Dienstleistung';
               $textInfoSconto                 = 'Der Rabatt wird nur auf den Gesamtbetrag des Angebots angewendet, den die Unterkunftseinrichtung zum Zeitpunkt der Erstellung des Angebots zusammengestellt hat; Änderungen durch das Hinzufügen oder Entfernen zusätzlicher Dienstleistungen beeinflussen nicht den Rabattbetrag!';
               $PrezzoServizio                 = 'Preisservice';
               $NumeroGiorni                   = 'Anzahl der Tage';
@@ -1669,7 +3202,7 @@ class ProController extends Controller
                                         <div class="modal-content">
                                             <div class="modal-body">
                                                 <i class="fa-light fa-circle-xmark chiudimodale" class="btn btn-secondary" data-bs-dismiss="modal"></i>
-                                                    <h4>'.($AccontoTariffa!=''?$AccontoTariffa:$condizioni_tariffa).'</h4>
+                                                    <h4>'.($AccontoTariffa!=''?$AccontoTariffa:'').'</h4>
                                                     <p>'.nl2br($AccontoTesto).'</p>
                                             </div>
                                         </div>
@@ -1964,7 +3497,7 @@ class ProController extends Controller
                                                     <div class="row small">
                                                         <div class="col-md-4 small nowrap">
                                                             <div class="form-group">
-                                                                <label for="prezzo' . $n . '_' . $vl['id'] . '">'.$PrezzoServizio .'</label>
+                                                                <label for="prezzo' . $n . '_' . $vl['id'] . '">'.$LabelPrezzoServizio .'</label>
                                                                 <input type="text" id="prezzo' . $n . '_' . $vl['id'] . '" name="prezzo' . $n . '_' . $vl['id'] . '" class="form-control" value="' . $vl['prezzo'] . '" readonly />
                                                             </div>
                                                         </div>
@@ -2094,7 +3627,7 @@ class ProController extends Controller
                                                                             "_token"             : "' . csrf_token() . '",
                                                                             "notti"              : notti,
                                                                             "NPersone"           : NPersone,
-                                                                            "idsito"             : $idsito,
+                                                                            "idsito"             : '.$idsito.',
                                                                             "lingua"             : lingua,
                                                                             "n_proposta"         : n_proposta,
                                                                             "id_servizio"        : id_servizio,
@@ -2262,7 +3795,7 @@ class ProController extends Controller
                                                 'NumeroPrenotazione'      => $NumeroPrenotazione,
                                                 'DataRichiesta'           => $DataRichiesta,
                                                 'DataScadenza'            => $DataScadenza,
-                                                //'ordinamento_pagamenti' => $this->ordinamento_pagamenti($idsito,$id_richiesta,$request),
+                                                'ordinamento_pagamenti'   => $this->ordinamento_pagamenti($idsito,$id_richiesta,$request),
                                                 'testo_messaggio'         => $testo_messaggio,
                                                 'Cellulare'               => $Cellulare,
                                                 'sistemazione'            => $sistemazione,
@@ -2281,6 +3814,10 @@ class ProController extends Controller
                                                 'Testo'                   => $Testo,
                                                 'DataArrivo'              => $DataArrivo,
                                                 'DataPartenza'            => $DataPartenza,
+                                                'Arrivo'                  => $Arrivo,
+                                                'Partenza'                => $Partenza,
+                                                'adulti'                  => $adulti,
+                                                'bambini'                 => $bambini,
                                                 'infoHotel'               => $infoHotel,
                                                 'Eventi'                  => $Eventi,
                                                 'puntiInteresse'          => $puntiInteresse,
@@ -2315,6 +3852,7 @@ class ProController extends Controller
                                                 'data'                    => $data,
                                                 'selezionaAltraProposta'  => $selezionaAltraProposta,
                                                 'tooltipChat'             => $tooltipChat,
+                                                'serviziFac'              => $serviziFac,
                                                 'servFac'                 => $servFac,
                                                 'servizi'                 => $servizi,
                                                 'fraseChat'               => $fraseChat,

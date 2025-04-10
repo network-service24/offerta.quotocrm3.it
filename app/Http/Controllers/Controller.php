@@ -971,7 +971,13 @@ class Controller extends BaseController
      */
     public function calc_prezzo_servizio(Request $request)
     {
-        $output              = '';
+        $output               = '';
+        $new_explane_servizio = '';
+        $new_totale_servizio  = '';
+        $new_totale_servizi   = '';
+        $new_totale_proposta  = '';
+        $new_totale_caparra   = '';
+
         $notti               = $request->notti;
         $idsito              = $request->idsito;
         $n_proposta          = $request->n_proposta;
@@ -1023,7 +1029,7 @@ class Controller extends BaseController
                         $new_totale_proposta = ($totaleProposta-$new_totale_servizio);
                         if($percentualeCaparra != ''){
                             $new_totale_caparra_ = ($new_totale_proposta*$percentualeCaparra/100);
-                            $new_totale_caparra = ($new_totale_caparra_-$new_totale_caparra);
+                            $new_totale_caparra = ($new_totale_caparra_-floatval($new_totale_caparra));
                         }else{
                             $new_totale_caparra = '';
                         }
@@ -1134,7 +1140,13 @@ class Controller extends BaseController
      */
     public function calc_prezzo_servizio_a_persona(Request $request)
     {
-        $output              = '';
+        $output               = '';
+        $new_explane_servizio = '';
+        $new_totale_servizio  = '';
+        $new_totale_servizi   = '';
+        $new_totale_proposta  = '';
+        $new_totale_caparra   = '';
+
         $notti               = $request->notti;
         $NPersone            = $request->NPersone;
         $idsito              = $request->idsito;
@@ -1203,7 +1215,7 @@ class Controller extends BaseController
                         $new_totale_proposta = ($totaleProposta-$new_totale_servizio);
                         if($percentualeCaparra != ''){
                             $new_totale_caparra_ = ($new_totale_proposta*$percentualeCaparra/100);
-                            $new_totale_caparra = ($new_totale_caparra_-$new_totale_caparra);
+                            $new_totale_caparra = ($new_totale_caparra_-floatval($new_totale_caparra));
                         }else{
                             $new_totale_caparra = '';
                         }

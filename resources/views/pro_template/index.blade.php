@@ -228,7 +228,7 @@
                     <div class="row row-eq-height">           
                         @if($ordinamento_pagamenti)
                             @foreach ($ordinamento_pagamenti as $chiave_pagamenti => $valore_pagamenti)
-                                $valore_pagamenti;
+                                <?php echo $valore_pagamenti;?>
                             @endforeach
                         @endif
                     </div>
@@ -264,7 +264,7 @@
         <?php $ck_serv = $check_controllo_servizi; ?>
             @if($ck_serv == 1)
                 @if(!empty($serviziFac) && !is_null($serviziFac))
-                    echo $servFac;
+                    <?php echo $servFac;?>
                 @endif
             @endif
        
