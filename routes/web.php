@@ -77,7 +77,19 @@ Route::middleware(['settaSessione', 'dizionario'])
 ]);
 ### FINE CONTROLLER VOUCHER RECUPERO ###
 
-## FINE TEMPLATE DEFAULT ##
+## CHECKIN TEMPLATE ##
+Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/checkin/{directory}/{params}/index', [CheckinController::class, 'checkin_online'])
+ ->where([
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+ ]);
+ Route::post('/UpFile', [CheckinController::class, 'UpFile']);
+ Route::post('/listaRegioni', [CheckinController::class, 'listaRegioni']);
+ Route::post('/listaProvince', [CheckinController::class, 'listaProvince']);
+ Route::post('/listaComuni', [CheckinController::class, 'listaComuni']);
+ Route::post('/insertCheckin', [CheckinController::class, 'insertCheckin']);
+## FINE CHECKIN TEMPLATE ##
 
 ## TEMPLATE SMART ##
 Route::middleware(['settaSessione', 'dizionario'])
@@ -183,15 +195,6 @@ Route::middleware(['settaSessione', 'dizionario'])
   'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
  ]);
 
-
-## CHECKIN TEMPLATE ##
-Route::middleware(['settaSessione', 'dizionario'])
- ->get('/checkin/{directory}/{params}/index', [CheckinController::class, 'checkin_online'])
- ->where([
-  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
-  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
- ]);
-## FINE CHECKIN TEMPLATE ##
 
 
 /** contatore aperture ed utente online per landing defautl */
