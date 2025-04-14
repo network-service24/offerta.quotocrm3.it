@@ -84,11 +84,25 @@ Route::middleware(['settaSessione', 'dizionario'])
   'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
   'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
  ]);
+ Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/checkin/{directory}/{params}/{step}/step', [CheckinController::class, 'step'])
+ ->where([
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+  'step'      => '[0-9]+', // Pattern per numeri
+ ]);
+ Route::middleware(['settaSessione', 'dizionario'])
+ ->get('/checkin/{directory}/{params}/conferma', [CheckinController::class, 'conferma'])
+ ->where([
+  'directory' => '[a-zA-Z0-9._-]+', // Accetta lettere, numeri, underscore, punti e trattini
+  'params'    => '[a-zA-Z0-9=+/]+', // Pattern per "id_richiesta_idsito_tipo"
+ ]);
  Route::post('/UpFile', [CheckinController::class, 'UpFile']);
  Route::post('/listaRegioni', [CheckinController::class, 'listaRegioni']);
  Route::post('/listaProvince', [CheckinController::class, 'listaProvince']);
  Route::post('/listaComuni', [CheckinController::class, 'listaComuni']);
  Route::post('/insertCheckin', [CheckinController::class, 'insertCheckin']);
+ Route::post('/insertStep', [CheckinController::class, 'insertStep']);
 ## FINE CHECKIN TEMPLATE ##
 
 ## TEMPLATE SMART ##

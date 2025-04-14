@@ -129,6 +129,84 @@ class CheckinController extends Controller
        
     }
     
+
+    public function insertStep(Request $request)
+    {
+            $idsito          = $request->idsito;
+            $Lingua          = $request->lang;
+            $prenotazione    = $request->Prenotazione;
+            $DataNascita     = $request->DataNascita;
+            $DataRilascio    = $request->DataRilascio;
+            $DataScadenza    = $request->DataScadenza;
+           
+            $TipoDocumento   = addslashes($request->TipoDocumento);
+            $ComuneEmissione = addslashes($request->ComuneEmissione);
+            $StatoEmissione  = addslashes($request->StatoEmissione);
+            $Nome            = addslashes($request->Nome);
+            $Cognome         = addslashes($request->Cognome);
+            $Cittadinanza    = addslashes($request->Cittadinanza);
+            $Documento       = addslashes($request->Documento);
+                      
+            $Indirizzo       = addslashes($request->Indirizzo);
+            $StatoNascita    = addslashes($request->StatoNascita); 
+            
+            $Note            = addslashes($request->Note);  
+            $session_id      = Session::getId();    
+
+            
+
+
+          
+            DB::table('hospitality_checkin')->insert(
+                                                        [
+                                                            'idsito'              => $idsito,
+                                                            'session_id'          => $session_id,
+                                                            'lang'                => $Lingua,
+                                                            'Prenotazione'        => $prenotazione,
+                                                            'NumeroPersone'       => $request->NumeroPersone,
+                                                            'TipoComponente'      => $request->TipoComponente,
+                                                            'TipoDocumento'       => $TipoDocumento,
+                                                            'Documento'           => $Documento,
+                                                            'NumeroDocumento'     => $request->NumeroDocumento,
+                                                            'ComuneEmissione'     => $ComuneEmissione,
+                                                            'StatoEmissione'      => $StatoEmissione,
+                                                            'DataRilascio'        => $DataRilascio,
+                                                            'DataScadenza'        => $DataScadenza,
+                                                            'Nome'                => $Nome,
+                                                            'Cognome'             => $Cognome,
+                                                            'Sesso'               => $request->Sesso,
+                                                            'Cittadinanza'        => $Cittadinanza,
+                                                            'IdRegione'           => $request->id_regione,
+                                                            'CittaBis'            => $request->CittaBis,
+                                                            'Provincia'           => $request->Provincia,
+                                                            'ProvinciaBis'        => $request->ProvinciaBis,
+                                                            'Indirizzo'           => $Indirizzo,
+                                                            'Citta'               => $request->Citta,
+                                                            'Cap'                 => $request->Cap,
+                                                            'DataNascita'         => $DataNascita,
+                                                            'Statonascita'        => $StatoNascita,
+                                                            'IdRegione2'          => $request->id_regione2,
+                                                            'ProvinciaNascita'    => $request->ProvinciaNascita,
+                                                            'ProvinciaNascitaBis' => $request->ProvinciaNascitaBis,
+                                                            'LuogoNascita'        => $request->LuogoNascita,
+                                                            'LuogoNascitaBis'     => $request->LuogoNascitaBis,     
+                                                            'Note'                => $Note,
+                                                            'data_compilazione'  => date('Y-m-d H:i:s'),
+                                                        ]
+                                                    );
+            
+            
+            if(session('NumeroPersone') > $request->step){ 
+                return redirect('checkin/'.$request->directory.'/'.$request->params.'/'.$request->step.'/step');
+            }else{
+                return redirect('checkin/'.$request->directory.'/'.$request->params.'/conferma');
+            }
+             
+
+
+       
+    }
+
     /**
      * contentBanner
      *
@@ -303,7 +381,20 @@ class CheckinController extends Controller
 
     }
 
+    public function getNomeRegione($id_regione)
+    {
 
+            $sql = 'SELECT * FROM regioni where codice_regione = :codice_regione';
+            $ret = DB::select($sql, ['codice_regione' => $id_regione]);
+            if (sizeof($ret)) {
+                $output = $ret[0]->nome_regione;
+            } else {
+                $output = '';
+
+            }
+        
+        return $output;
+    }
 
     public function checkin_online($directory, $params, Request $request)
     {
@@ -436,5 +527,268 @@ class CheckinController extends Controller
     }
 
 
+    public function step($directory, $params, $step, Request $request)
+    {
+        $template = 'checkin';
+        // Decodifica il parametro params per sicurezza
+        $decodedParams = base64_decode($params);
+        // Verifica che la stringa sia valida
+        if (!$decodedParams || !str_contains($decodedParams, '_')) {
+            abort(404, "Formato URL non valido");
+        }
+        // Suddivisione dei parametri separati da "_"
+        $parts = explode('_', $decodedParams);
+
+        // Controllo per evitare errori se i parametri non sono nel formato corretto
+        if (count($parts) !== 3) {
+            abort(404, "Formato URL non valido");
+        }
+
+        list($id_richiesta, $idsito, $tipo) = $parts;
+
+
+        $row = $this->getCliente($idsito);
+     
+        $email       = $row->email;
+        $hotel       = $row->nome;
+        $indirizzo   = $row->indirizzo;
+        $comune      = $row->nome_comune;
+        $cap         = $row->cap;
+        $CIR         = $row->CIR;
+        $CIN         = $row->CIN;
+        if(strstr($row->tel,'+39') || strstr($row->tel,'0039')){
+            $tel     = $row->tel;
+        }else{
+            $tel     = '+39 '.$row->tel;
+        }
+        $prov        = $row->sigla_provincia;
+        $SitoWeb     = 'https://'.$row->web;
+        $Logo        = $row->logo;
+       
+
+        $select = "SELECT hospitality_guest.*
+                                FROM hospitality_guest
+                                WHERE hospitality_guest.idsito = :idsito
+                                AND hospitality_guest.Id = :id_richiesta
+                                ORDER BY hospitality_guest.Id DESC";
+        $sel  = DB::select($select,['idsito' => $idsito, 'id_richiesta' => $id_richiesta]);
+        $rows = $sel[0];
+              
+
+        $Id            = $rows->Id;
+        $Nome          = stripslashes($rows->Nome);
+        $Cognome       = stripslashes($rows->Cognome);
+        $Lingua        = $rows->Lingua;
+        $DataA_tmp     = explode("-",$rows->DataArrivo);
+        $DataArrivo    = $DataA_tmp[2].'-'.$DataA_tmp[1].'-'.$DataA_tmp[0];
+        $DataP_tmp     = explode("-",$rows->DataPartenza);
+        $DataPartenza  = $DataP_tmp[2].'-'.$DataP_tmp[1].'-'.$DataP_tmp[0];
+        $DataR_tmp     = explode("-",$rows->DataRichiesta);
+        $DataRichiesta = $DataR_tmp[2].'-'.$DataR_tmp[1].'-'.$DataR_tmp[0];
+        $Nprenotazione = $rows->NumeroPrenotazione;
+        $NumeroAdulti  = $rows->NumeroAdulti;
+        $NumeroBambini = $rows->NumeroBambini;
+        $TotalePersone = $NumeroAdulti+$NumeroBambini;
+        $NomeCliente   = $Nome .' '.$Cognome;
+
+        $NumeroPersone = $TotalePersone;
+
+
+        $select = "SELECT * FROM hospitality_checkin WHERE session_id = :sessione ORDER BY Id DESC";
+        $result = DB::select($select,['sessione' => Session::getId()]);
+        $row = $result[0];
+
+        $Citta         = $row->Citta;
+        $id_regione    = $row->IdRegione;
+        $NomeRegione   = $this->getNomeRegione($id_regione);
+        $Provincia     = $row->Provincia;
+        $Cap           = $row->Cap;
+        $Indirizzo     = $row->Indirizzo;
+        $Cittadinanza = $row->Cittadinanza;
+
+
+
+        $indice =  ($step-1);
+        $nome = session('Name')[$indice] ?? null;
+        $cognome = session('Surname')[$indice] ?? null;
+
+        $step = ($request->step + 1);
+
+
+        return view('checkin_template/step',
+                        [
+                            'step'          => $step,
+                            'params'        => $params,
+                            'template'      => $template,
+                            'directory'     => $directory,
+                            'id_richiesta'  => $id_richiesta,
+                            'nome'          => $nome,
+                            'cognome'       => $cognome,
+                            'idsito'        => $idsito,
+                            'tipo'          => $tipo,
+                            'Lingua'        => $Lingua,
+                            'hotel'         => $hotel,
+                            'email'         => $email,
+                            'indirizzo'     => $indirizzo,
+                            'comune'        => $comune,
+                            'cap'           => $cap,
+                            'CIR'           => $CIR,
+                            'CIN'           => $CIN,
+                            'tel'           => $tel,
+                            'prov'          => $prov,
+                            'SitoWeb'       => $SitoWeb,
+                            'Logo'          => $Logo,
+                            'Nome'          => $Nome,
+                            'Cognome'       => $Cognome,
+                            'DataArrivo'    => $DataArrivo,
+                            'DataPartenza'  => $DataPartenza,
+                            'DataRichiesta' => $DataRichiesta,
+                            'Nprenotazione' => $Nprenotazione,
+                            'NumeroAdulti'  => $NumeroAdulti,
+                            'NumeroBambini' => $NumeroBambini,
+                            'TotalePersone' => $TotalePersone,
+                            'NomeCliente'   => $NomeCliente,
+                            'NumeroPersone' => $NumeroPersone,
+                            'NomeCliente'   => $NomeCliente,
+                            'list_stato'    => $this->listaStati(),
+                            'contentBanner' => $this->contentBanner($idsito,$Lingua,$Logo),
+                            'Citta'         => $Citta,
+                            'id_regione'    => $id_regione,
+                            'NomeRegione'   => $NomeRegione,
+                            'Provincia'     => $Provincia,
+                            'Cap'           => $Cap,
+                            'Indirizzo'     => $Indirizzo,
+                            'Cittadinanza'  => $Cittadinanza,
+
+                        ]
+                    );
+    }
+
+
+    public function conferma($directory, $params, Request $request)
+    {
+        $template = 'checkin';
+        // Decodifica il parametro params per sicurezza
+        $decodedParams = base64_decode($params);
+        // Verifica che la stringa sia valida
+        if (!$decodedParams || !str_contains($decodedParams, '_')) {
+            abort(404, "Formato URL non valido");
+        }
+        // Suddivisione dei parametri separati da "_"
+        $parts = explode('_', $decodedParams);
+
+        // Controllo per evitare errori se i parametri non sono nel formato corretto
+        if (count($parts) !== 3) {
+            abort(404, "Formato URL non valido");
+        }
+
+        list($id_richiesta, $idsito, $tipo) = $parts;
+
+
+        $row = $this->getCliente($idsito);
+     
+        $email       = $row->email;
+        $hotel       = $row->nome;
+        $indirizzo   = $row->indirizzo;
+        $comune      = $row->nome_comune;
+        $cap         = $row->cap;
+        $CIR         = $row->CIR;
+        $CIN         = $row->CIN;
+        if(strstr($row->tel,'+39') || strstr($row->tel,'0039')){
+            $tel     = $row->tel;
+        }else{
+            $tel     = '+39 '.$row->tel;
+        }
+        $prov        = $row->sigla_provincia;
+        $SitoWeb     = 'https://'.$row->web;
+        $Logo        = $row->logo;
+       
+
+        $select = "SELECT hospitality_guest.*
+                                FROM hospitality_guest
+                                WHERE hospitality_guest.idsito = :idsito
+                                AND hospitality_guest.Id = :id_richiesta
+                                ORDER BY hospitality_guest.Id DESC";
+        $sel  = DB::select($select,['idsito' => $idsito, 'id_richiesta' => $id_richiesta]);
+        $rows = $sel[0];
+              
+
+        $Id            = $rows->Id;
+        $Nome          = stripslashes($rows->Nome);
+        $Cognome       = stripslashes($rows->Cognome);
+        $Lingua        = $rows->Lingua;
+        $Nprenotazione = $rows->NumeroPrenotazione;
+    
+        
+        $mail = new PHPMailer;
+
+        $mail->CharSet   = "UTF-8";
+        $mail->SMTPDebug = 0;
+        $mail->isSMTP();
+        $mail->Host       = env('MAIL_HOST');
+        $mail->SMTPAuth   = true;
+        $mail->Username   = env('MAIL_USERNAME');
+        $mail->Password   = env('MAIL_PASSWORD');
+        $mail->SMTPSecure = env('MAIL_ENCRYPTION');
+        $mail->Port       = env('MAIL_PORT');
+
+        $mail->setFrom(env('MAIL_FROM_ADDRESS'),env('APP_NAME'));
+
+        $mail->addAddress($email, $Nome.' '.$Cognome);
+        $mail->isHTML(true);
+        $mail->Subject = 'Hai ricevuto un modulo di Check-in On-line da '.$Nome.' '.$Cognome.' - QUOTO!';
+   
+          $messaggio = '<html>
+                            <head>
+                              <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                              <title>QUOTO!</title>
+                            </head>
+                            <body>
+                              <table cellpadding="0" cellspacing="0" width="100%" border="0">
+                                <tr>
+                                    <td align="left" valign="top">
+                                       <img src="'.env('APP_URL').'img/logo_email.png">
+                                       <h1>Un modulo di Check-in On-line è stato compilato!</h1> 
+                                       <p><b>Prenotazione confermata:</b> <b>Nr.</b> '.$Nprenotazione.'</p>
+                                       <p><b>Modulo compilato da</b> '.$Nome.' '.$Cognome.'</p>
+                                       <p style="font-size:80%">Entra in QUOTO! per controllare il suo contenuto!</p>
+                                     </td>
+                                </tr>
+                              </table>
+                             </body>
+                          </html>'; 		      
+            
+              $mail->msgHTML($messaggio, dirname(__FILE__));
+              $mail->AltBody = 'To view the message, please use an HTML compatible email viewer!';
+              $mail->send();  
+
+
+              return view('checkin_template/conferma',
+                                                [
+                                                    'params'        => $params,
+                                                    'template'      => $template,
+                                                    'directory'     => $directory,
+                                                    'id_richiesta'  => $id_richiesta,
+                                                    'idsito'        => $idsito,
+                                                    'tipo'          => $tipo,
+                                                    'Lingua'        => $Lingua,
+                                                    'hotel'         => $hotel,
+                                                    'email'         => $email,
+                                                    'indirizzo'     => $indirizzo,
+                                                    'comune'        => $comune,
+                                                    'cap'           => $cap,
+                                                    'CIR'           => $CIR,
+                                                    'CIN'           => $CIN,
+                                                    'tel'           => $tel,
+                                                    'prov'          => $prov,
+                                                    'SitoWeb'       => $SitoWeb,
+                                                    'Logo'          => $Logo,
+                                                    'Nome'          => $Nome,
+                                                    'Cognome'       => $Cognome,
+                                                    'Nprenotazione' => $Nprenotazione,
+                                                    'contentBanner' => $this->contentBanner($idsito,$Lingua,$Logo),
+                                                ]
+                                            );
+    }
 
 }
