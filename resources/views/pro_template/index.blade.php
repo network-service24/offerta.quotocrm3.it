@@ -102,7 +102,7 @@
 
     @if($result!='' && $result=='0')
 
-        <script language="javascript">_alert("ERROR","{{$mail->ErrorInfo}}")</script>
+        <script language="javascript">_alert("ERROR","Errore generico email non inviata")</script>
 
     @elseif($result!='' && $result=='1')
 
@@ -317,7 +317,7 @@
                             <span class="adulti"><?=dizionario('ADULTI')?> <?=$adulti?></span> - <span class="Bambini"><?=dizionario('BAMBINI')?> <?=$bambini?></span> 
                         </div>
                     <?}?>
-                    <form id="form_msg" name="form_msg" method="post" action="/accetta_proposta">
+                    <form id="form_msg" name="form_msg" method="post" action="/accetta_proposta_pro">
                         <div class="formproposta">   
                             <div class="riepilogoProposta"></div>                         
                             <input type="hidden" name="NumeroProposta" id="NumeroProposta" />
@@ -338,10 +338,11 @@
                         <input type="hidden" name="email_utente" value="<?=$Email?>">
                         <input type="hidden" name="nome_utente" value="<?=$Cliente?>">
                         <input type="hidden" name="tipo_richiesta" value="<?=$TipoRichiesta?>">
-                        <input type="hidden" name="id_richiesta" value="<?=$Id?>">
+                        <input type="hidden" name="id_richiesta" value="<?=$id_richiesta?>">
+                        <input type="hidden" name="idsito" value="<?=$idsito?>">
                         <input type="hidden" name="lang" value="<?=$Lingua?>">
-                        <input type="hidden" name="ip" value="<?=$_SERVER['REMOTE_ADDR']?>">
-                        <input type="hidden" name="agent" value="<?=$_SERVER['HTTP_USER_AGENT']?>">
+                        <input type="hidden" name="ip" value="{{ request()->ip() }}">
+                        <input type="hidden" name="agent" value="{{ request()->header('User-Agent') }}">
                         <input type="hidden" name="action" value="send_mail">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <div id="recaptcha" class="g-recaptcha" data-sitekey="6Lf5BZklAAAAAN9mVy9ob9cKPnmzWhMvGU5hDA2m" data-callback="onCompleted" data-size="invisible"></div>
@@ -536,7 +537,7 @@
                         </div>
 
                         <div class="form-group text-end p-2 bg-light">
-                            <input type="hidden" name="id_guest" value="<?=$IdRichiesta?>">
+                            <input type="hidden" name="id_guest" value="<?=$id_richiesta?>">
                             <input type="hidden" name="NumeroPrenotazione" value="<?=$Nprenotazione?>">
                             <input type="hidden" name="user" value="<?=$Cliente?>">
                             <input type="hidden" name="lang" value="<?=$Lingua?>">
@@ -553,7 +554,7 @@
                                     }
                                 });
                                 $.ajax({
-                                    url: "/ballon_smart",
+                                    url: "/ballon",
                                     type: "POST",
                                     data: {"Nprenotazione": Nprenotazione,"idsito": idsito},
                                         success: function(response) {

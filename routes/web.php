@@ -44,6 +44,7 @@ Route::post('/calc_prezzo_servizio', [Controller::class, 'calc_prezzo_servizio']
 Route::post('/calc_prezzo_servizio_a_persona', [Controller::class, 'calc_prezzo_servizio_a_persona']);
 Route::get('/gmap', [Controller::class, 'gmap']);
 Route::post('/accetta_proposta', [Controller::class, 'accetta_proposta']);
+Route::post('/accetta_proposta_pro', [Controller::class, 'accetta_proposta_pro']);
 /** registrazione pagamento paypal async */
 Route::post('/reg_payment', [Controller::class, 'reg_payment'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 /** registrazione pagamento gateway bancario BCC payway async */

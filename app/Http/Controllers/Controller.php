@@ -1457,7 +1457,7 @@ class Controller extends BaseController
 
         if (isset($recaptchaResponse)) {
 
-            $remoteip  = $_SERVER["REMOTE_ADDR"];
+            $remoteip  = $request->ip();
             $recaptcha = $recaptchaResponse;
 
             $response = $this->verifyCaptcha($recaptcha, $remoteip, '6Lf4WPQUAAAAALWdUSPnZvVwGKrwcJHxfkaOHrt_');
@@ -1697,8 +1697,6 @@ class Controller extends BaseController
                                 $select3 = "SELECT * FROM hospitality_richiesta WHERE id_proposta = :id_proposta AND TipoSoggiorno != :TipoSoggiorno AND NumeroCamere != :NumeroCamere AND TipoCamere != :TipoCamere AND Prezzo != :Prezzo ORDER BY Id DESC";
                                 $ris3    = DB::select($select3, ['id_proposta' => $check_proposta, 'TipoSoggiorno' => '', 'NumeroCamere' => 0, 'TipoCamere' => '', 'Prezzo' => 0]);
 
-                                $num_cam  = 1;
-                                $proposta = '';
 
                                 foreach ($ris3 as $key => $rws3) {
 
@@ -1714,80 +1712,9 @@ class Controller extends BaseController
                                         'Prezzo'        => $rws3->Prezzo,
                                     ]);
 
-                                    ######################################### ARRAY UTILE AL CURL PER ANALITICS####################################
-/*
-                                    $sel3 = "SELECT Id as idCamera,TipoCamere as camera FROM hospitality_tipo_camere WHERE Id = :Id AND idsito = :idsito";
-                                    $res3 = DB::select($sel3, ['Id' => $rws3->TipoCamere, 'idsito' => $rws->idsito]);
-                                    $rec3 = $res3[0];
 
-                                    $sel4 = "SELECT TipoSoggiorno as soggiorno FROM hospitality_tipo_soggiorno WHERE Id = :Id AND idsito = :idsito";
-                                    $res4 = DB::select($sel4, ['Id' => $rws3->TipoSoggiorno, 'idsito' => $rws->idsito]);
-                                    $rec4 = $res4[0];
 
-                                    $clean_camera   = str_replace('&', ' ', $rec3->camera);
-                                    $array_camere[] = ["item_name" => "quoto - $clean_camera", "quantity" => "1", "price" => $rws3->Prezzo];
-
-                                    $proposta .= '&pr' . $num_cam . 'id=' . $rec3->idCamera . '&pr' . $num_cam . 'nm=QUOTO - ' . str_replace("&", " ", $rec3->camera) . ' - ' . str_replace("&", " ", $rec4->soggiorno) . ' - dal ' . $rws2->Arrivo . ' al ' . $rws2->Partenza . '&pr' . $num_cam . 'ca=' . str_replace("&", " ", $rec3->camera) . ' - ' . str_replace("&", " ", $rec4->soggiorno) . '&pr' . $num_cam . 'qt=' . $rws3->NumeroCamere . '&pr' . $num_cam . 'pr=' . $rws3->Prezzo . '$pr' . $num_cam;
-*/
-                                    ######################################### ARRAY UTILE AL CURL PER ANALITICS####################################
-
-                                    $num_cam++;
                                 }
-
-                                // ##############CURL VERSO ANALYTICS PER IMPUTARE I DATI DI QUOTO IN ANALYTICS##############
-                                // Solo se la provenienza è da Sito Web
-                               /*
-                                if ($rws->FontePrenotazione == 'Sito Web') {
-
-                                    $dati_analytics   = $this->get_account_analytics($rws->idsito);
-                                    $AccountAnalytics = $dati_analytics->IdAccountAnalytics;
-                                    $measurement_id   = $dati_analytics->measurement_id;
-                                    $api_secret       = $dati_analytics->api_secret;
-
-                                    if ($AccountAnalytics != '') {
-
-                                        $select    = "SELECT CLIENT_ID FROM hospitality_client_id WHERE NumeroPrenotazione = :NumeroPrenotazione AND idsito = :idsito";
-                                        $result    = DB::select($select, ['NumeroPrenotazione' => $rws->NumeroPrenotazione, 'idsito' => $rws->idsito]);
-                                        $record    = $result[0];
-                                        $CLIENT_ID = $record->CLIENT_ID;
-
-                                        if ($CLIENT_ID != '') {
-
-          
-                                            if ($api_secret != '' && $measurement_id != '') { // solo se i campi measurement_id e api_secret sono compilati
-
-                                                $CLIENT_ID_GA4 = $CLIENT_ID;
-
-                                                $stringa_dati = ["client_id" => $CLIENT_ID_GA4,
-                                                    "events"                          => [["name" => "purchase",
-                                                        "params"                                                => ["items" => $array_camere,
-                                                            "affiliation"                                                            => "quoto",
-                                                            "currency"                                                               => "EUR",
-                                                            "transaction_id"                                                         => $rws['NumeroPrenotazione'],
-                                                            "value"                                                                  => str_replace(",", ".", ($request->NewTotale == '' ? $rws2->PrezzoP : $request->NewTotale))]]],
-                                                ];
-
-                                                $data = json_encode($stringa_dati);
-                                                $url  = 'https://www.google-analytics.com/mp/collect?api_secret=' . $api_secret . '&measurement_id=' . $measurement_id;
-                                                $ch   = curl_init();
-                                                curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-                                                curl_setopt($ch, CURLOPT_URL, $url);
-                                                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-                                                curl_setopt($ch, CURLOPT_POST, true);
-                                                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-                                                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
-                                                curl_exec($ch);
-                                                curl_close($ch);
-
-                                            }
-
-                                        } // fine se account è inserito su suiteweb
-
-                                    } // fine se client id è presente
-
-                                } // fine if solo se la provenienza è da Sito Web
-                                */
-                                  // ##############CURL VERSO ANALYTICS PER IMPUTARE I DATI DI QUOTO IN ANALYTICS##############
 
                             } // fine if se è già presente la conferma
 
@@ -1798,7 +1725,7 @@ class Controller extends BaseController
                 } // se la varibaile proposta non è vuota
                 $re_url = ''.(!empty(session('TEMPLATE'))?'/'.session('TEMPLATE'):'').'/' . session('DIRECTORY'). '/' . session('PARAM'). '/index?result=' . $risposta;
                 return redirect($re_url);
-
+ 
             } else {
                 // ritorno alla pagina KO
                 $re_url = ''.(!empty(session('TEMPLATE'))?'/'.session('TEMPLATE'):'').'/' . session('DIRECTORY'). '/' . session('PARAM'). '/index';
@@ -1809,9 +1736,352 @@ class Controller extends BaseController
             $re_url = ''.(!empty(session('TEMPLATE'))?'/'.session('TEMPLATE'):'').'/' . session('DIRECTORY'). '/' . session('PARAM'). '/index';
             return redirect($re_url)->with('captcha', 'Controllo CAPTCHA mancante, senza il form non viene spedito, contattare amminisratore del sito!');
         } // if recaptcha
-
+ 
     }
-    
+        
+    /**
+     * accetta_proposta_pro
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function accetta_proposta_pro(Request $request)
+    {
+
+        $sql = 'SELECT siti.nome,
+                                    siti.web,
+                                    siti.https,
+                                    siti.email,
+                                    siti.indirizzo,
+                                    siti.cap,
+                                    siti.tel,
+                                    siti.fax,
+                                    comuni.nome_comune as comune,
+                                    province.sigla_provincia as prov,
+                                    users.logo
+                            FROM siti
+                            INNER JOIN comuni ON comuni.codice_comune = siti.codice_comune
+                            INNER JOIN province ON province.codice_provincia = siti.codice_provincia
+                            INNER JOIN users ON users.idsito = siti.idsito
+                            WHERE siti.idsito = :idsito';
+
+        $rr = DB::select($sql, ['idsito' => $request->idsito]);
+
+        $row = $rr[0];
+
+        $sito_tmp = str_replace("http://", "", $row->web);
+        $sito_tmp = str_replace("https://", "", $sito_tmp);
+        $sito_tmp = str_replace("www.", "", $sito_tmp);
+        if ($row->https == 1) {
+            $http = 'https://';
+        } else {
+            $http = 'http://';
+        }
+        $SitoWeb    = $http . 'www.' . $sito_tmp;
+        $NomeHotel  = $row->nome;
+        $EmailHotel = $row->email;
+        $tel        = $row->tel;
+        $fax        = $row->fax;
+        $cap        = $row->cap;
+        $indirizzo  = $row->indirizzo;
+        $comune     = $row->comune;
+        $prov       = $row->prov;
+        $logo       = $row->logo;
+        $Lingua     = $request->lang;
+
+        $mail = new PHPMailer;
+
+        $mail->CharSet   = "UTF-8";
+        $mail->SMTPDebug = 0;
+        $mail->isSMTP();
+        $mail->Host       = env('MAIL_HOST');
+        $mail->SMTPAuth   = true;
+        $mail->Username   = env('MAIL_USERNAME');
+        $mail->Password   = env('MAIL_PASSWORD');
+        $mail->SMTPSecure = env('MAIL_ENCRYPTION');
+        $mail->Port       = env('MAIL_PORT');
+
+        $mail->setFrom(env('MAIL_FROM_ADDRESS'), $request->nome_utente);
+
+        // EMAIL INDIRIZZATA AL HOTEL
+        $mail->addAddress($request->email_hotel, $request->nome_hotel);
+
+        $mail->Subject = 'Conferma proposta soggiorno (' . $request->nome_hotel . ')';
+
+        include_once public_path('email_template/conferma_mail.php');
+
+        $contenuto = $top . $contenuto_html . $contenuto_html_h . $contenuto_html_close . $close;
+
+        $mail->msgHTML($contenuto, dirname(__FILE__));
+
+        $mail->AltBody = 'This is a plain-text message body';
+
+
+                if (! empty($request->proposta)) {
+                    //send the message, check for errors
+
+                    if (! $mail->send()) {
+
+                        $risposta = '0';
+
+                    } else {
+
+                        // AGGIORNAMWENTO DA PREVENTIVO A CONFERMA
+                        if ($request->tipo_richiesta == 'Preventivo') {
+
+                            $select = "SELECT * FROM hospitality_guest WHERE Id = :id_richiesta";
+                            $ris    = DB::select($select, ['id_richiesta' => $request->id_richiesta]);
+                            $rws    = $ris[0];
+
+                            $select2    = "SELECT * FROM hospitality_guest WHERE idsito = :idsito AND NumeroPrenotazione = :NumeroPrenotazione AND TipoRichiesta = :TipoRichiesta";
+                            $ris2       = DB::select($select2, ['idsito' => $rws->idsito, 'NumeroPrenotazione' => $rws->NumeroPrenotazione, 'TipoRichiesta' => 'Conferma']);
+                            $check_conf = sizeof($ris2);
+                            // se la conferma NON è già presente
+                            $risposta = '2';
+
+                            if ($check_conf == 0) {
+
+                                $mail2 = new PHPMailer;
+
+                                $mail2->CharSet   = "UTF-8";
+                                $mail2->SMTPDebug = 0;
+                                $mail2->isSMTP();
+                                $mail2->Host       = env('MAIL_HOST');
+                                $mail2->SMTPAuth   = true;
+                                $mail2->Username   = env('MAIL_USERNAME');
+                                $mail2->Password   = env('MAIL_PASSWORD');
+                                $mail2->SMTPSecure = env('MAIL_ENCRYPTION');
+                                $mail2->Port       = env('MAIL_PORT');
+
+                                $mail2->setFrom(env('MAIL_FROM_ADDRESS'), $request->nome_utente);
+
+                                $mail2->Subject = 'Copia Conferma proposta soggiorno (' . $request->nome_hotel . ')';
+                                // COPIA EMAIL INDIRIZZATA AL CLIENTE
+                                $mail2->addAddress($request->email_utente, $request->nome_utente);
+
+                                $contenuto2 = $top . $contenuto_html . $contenuto_html_c . $contenuto_html_close . $close;
+
+                                $mail2->msgHTML($contenuto2, dirname(__FILE__));
+
+                                $mail2->AltBody = 'This is a plain-text message body';
+
+                                $mail2->send();
+
+                                $risposta = '1';
+
+                                $riepilogo_prop = '';
+
+                                foreach ($request->proposta as $chiave => $valore) {
+                                    $riepilogo_prop .= $v . ($request->NewTotale != '' ? ' Nuovo totale (New Total) € ' . number_format($request->NewTotale, 2, ',', '.') : '');
+                                }
+
+                                DB::table('hospitality_guest')->insert(
+                                    [
+                                        'id_politiche'              => $rws->id_politiche,
+                                        'id_template'               => $rws->id_template,
+                                        'AccontoRichiesta'          => $rws->AccontoRichiesta,
+                                        'AccontoLibero'             => $rws->AccontoLibero,
+                                        'DataRichiesta'             => date('Y-m-d'),
+                                        'TipoRichiesta'             => 'Conferma',
+                                        'TipoVacanza'               => $rws->TipoVacanza,
+                                        'ChiPrenota'                => addslashes($rws->ChiPrenota),
+                                        'EmailSegretaria'           => $rws->EmailSegretaria,
+                                        'idsito'                    => $rws->idsito,
+                                        'MultiStruttura'            => addslashes($rws->MultiStruttura),
+                                        'Nome'                      => addslashes($rws->Nome),
+                                        'Cognome'                   => addslashes($rws->Cognome),
+                                        'Email'                     => $rws->Email,
+                                        'PrefissoInternazionale'    => $rws->PrefissoInternazionale,
+                                        'Cellulare'                 => ($rws->Cellulare == '' ? $request->Cellulare : $rws->Cellulare),
+                                        'Lingua'                    => $rws->Lingua,
+                                        'DataArrivo'                => $rws->DataArrivo,
+                                        'DataPartenza'              => $rws->DataPartenza,
+                                        'NumeroPrenotazione'        => $rws->NumeroPrenotazione,
+                                        'NumeroAdulti'              => $rws->NumeroAdulti,
+                                        'NumeroBambini'             => $rws->NumeroBambini,
+                                        'EtaBambini1'               => $rws->EtaBambini1,
+                                        'EtaBambini2'               => $rws->EtaBambini2,
+                                        'EtaBambini3'               => $rws->EtaBambini3,
+                                        'EtaBambini4'               => $rws->EtaBambini4,
+                                        'EtaBambini5'               => $rws->EtaBambini5,
+                                        'EtaBambini6'               => $rws->EtaBambini6,
+                                        'FontePrenotazione'         => $rws->FontePrenotazione,
+                                        'TipoPagamento'             => $rws->TipoPagamento,
+                                        'Note'                      => addslashes($rws->Note),
+                                        'AbilitaInvio'              => 1,
+                                        'CheckConsensoPrivacy'      => $request->policy_soggiorno,
+                                        'CheckConsensoMarketing'    => $request->marketing,
+                                        'CheckConsensoProfilazione' => $request->profilazione,
+                                        'Ip'                        => $request->ip,
+                                        'Agent'                     => addslashes($request->agent),
+                                        'DataVoucherRecSend'        => $rws->DataVoucherRecSend,
+                                        'DataValiditaVoucher'       => $rws->DataValiditaVoucher,
+                                        'RequestProposta'           => addslashes($riepilogo_prop),
+                                        'CodiceSconto'              => addslashes($rws->CodiceSconto),
+                                    ]
+                                );
+
+                                $Id_richiesta = DB::getPdo()->lastInsertId();
+
+                                // UPDATE dello stato del preventivo in accettato
+                                DB::table('hospitality_guest')->where('Id', '=', $request->id_richiesta)->update(['Accettato' => 1]);
+
+                                $check_proposta = [];
+                                foreach ($request->proposta as $k => $v) {
+                                    $check_proposta = $k;
+                                }
+                                $selectP = "SELECT * FROM hospitality_rel_pagamenti_preventivi WHERE id_richiesta = :id_richiesta";
+                                $risP    = DB::select($selectP, ['id_richiesta' => $request->id_richiesta]);
+                                $rwsP    = sizeof($risP);
+                                if ($rwsP > 0) {
+                                    $value = $risP[0];
+                                    DB::table('hospitality_rel_pagamenti_preventivi')->insert([
+                                        'idsito'       => $value->idsito,
+                                        'id_richiesta' => $Id_richiesta,
+                                        'CC'           => $value->CC,
+                                        'BB'           => $value->BB,
+                                        'VP'           => $value->VP,
+                                        'PP'           => $value->PP,
+                                        'GB'           => $value->GB,
+                                        'GBVP'         => $value->GBVP,
+                                        'GBS'          => $value->GBS,
+                                        'linkStripe'   => $value->linkStripe,
+                                        'GBNX'         => $value->GBNX,
+                                    ]);
+
+                                }
+
+                                $select2 = "SELECT * FROM hospitality_proposte WHERE Id = :Id";
+                                $ris2    = DB::select($select2, ['Id' => $check_proposta]);
+                                $rws2    = $ris2[0];
+
+                                DB::table('hospitality_proposte')->insert([
+                                    'id_richiesta'       => $Id_richiesta,
+                                    'Arrivo'             => $rws2->Arrivo,
+                                    'Partenza'           => $rws2->Partenza,
+                                    'NomeProposta'       => addslashes($rws2->NomeProposta),
+                                    'TestoProposta'      => addslashes($rws2->TestoProposta),
+                                    'CheckProposta'      => 1,
+                                    'PrezzoL'            => $rws2->PrezzoL,
+                                    'PrezzoP'            => ($request->NewTotale == '' ? $rws2->PrezzoP : $request->NewTotale),
+                                    'AccontoPercentuale' => $rws2->AccontoPercentuale,
+                                    'AccontoImporto'     => $rws2->AccontoImporto,
+                                    'AccontoTariffa'     => addslashes($rws2->AccontoTariffa),
+                                    'AccontoTesto'       => addslashes($rws2->AccontoTesto),
+                                ]);
+
+                                $IdProposta = DB::getPdo()->lastInsertId();
+
+                                $selectSC = "SELECT * FROM hospitality_relazione_sconto_proposte WHERE id_richiesta = :id_richiesta AND id_proposta = :id_proposta";
+                                $risSC    = DB::select($selectSC, ['id_proposta' => $check_proposta, 'id_richiesta' => $request->id_richiesta]);
+                                $rwsSC    = sizeof($risSC);
+                                if ($rwsSC > 0) {
+                                    $valSC = $risSC[0];
+                                    DB::table('hospitality_relazione_sconto_proposte')->insert([
+                                        'idsito'       => $valSC->idsito,
+                                        'id_richiesta' => $Id_richiesta,
+                                        'id_proposta'  => $IdProposta,
+                                        'sconto'       => $valSC->sconto,
+                                    ]);
+
+                                }
+                                ######################################### NUOVO METODO PER SALVARE I SERVIZI AGGIUNTIVI SCELTI LATO UTENTE NELLA LANDING ####################################
+                                if ($request->NewTotale == '') {
+
+                                    $select4 = "SELECT * FROM hospitality_relazione_servizi_proposte WHERE id_proposta = :id_proposta";
+                                    $ris4    = DB::select($select4, ['id_proposta' => $check_proposta]);
+                                    $rws4    = sizeof($ris4);
+                                    if ($rws4 > 0) {
+                                        foreach ($ris4 as $key => $value) {
+                                            DB::table('hospitality_relazione_servizi_proposte')->insert([
+                                                'idsito'       => $value->idsito,
+                                                'id_richiesta' => $Id_richiesta,
+                                                'id_proposta'  => $IdProposta,
+                                                'servizio_id'  => $value->servizio_id,
+                                                'num_persone'  => $value->num_persone,
+                                                'num_notti'    => $value->num_notti,
+                                            ]);
+                                        }
+                                    }
+
+                                } else {
+
+                                    $select4 = "SELECT * FROM hospitality_relazione_servizi_proposte WHERE id_proposta = :id_proposta";
+                                    $ris4    = DB::select($select4, ['id_proposta' => $check_proposta]);
+                                    $rws4    = sizeof($ris4);
+                                    if ($rws4 > 0) {
+                                        foreach ($ris4 as $key => $value) {
+                                            DB::table('hospitality_relazione_servizi_proposte')->insert([
+                                                'idsito'       => $value->idsito,
+                                                'id_richiesta' => $Id_richiesta,
+                                                'id_proposta'  => $IdProposta,
+                                                'servizio_id'  => $value->servizio_id,
+                                                'num_persone'  => $value->num_persone,
+                                                'num_notti'    => $value->num_notti,
+                                            ]);
+                                        }
+                                    }
+
+                                    $prezzoServizioClone = $request->input('PrezzoServizioClone' . $request->input('NumeroProposta'));
+                                    if ($prezzoServizioClone != '') {
+
+                                        $numeroPersone = '';
+                                        $NumeroNotti   = '';
+
+                                        foreach ($prezzoServizioClone as $key => $vl) {
+
+                                            $numeroPersone = $request->input('NumeroPersone' . $request->input('NumeroProposta') . '_' . $key);
+                                            $NumeroNotti   = $request->input('NumeroNotti' . $request->input('NumeroProposta') . '_' . $key);
+
+                                            DB::table('hospitality_relazione_servizi_proposte')->insert([
+                                                'idsito'       => session('IDSITO'),
+                                                'id_richiesta' => $Id_richiesta,
+                                                'id_proposta'  => $IdProposta,
+                                                'servizio_id'  => $key,
+                                                'num_persone'  => $numeroPersone,
+                                                'num_notti'    => $NumeroNotti,
+                                            ]);
+                                        }
+                                    }
+
+                                }
+                                ######################################### ####################################
+
+                                $select3 = "SELECT * FROM hospitality_richiesta WHERE id_proposta = :id_proposta AND TipoSoggiorno != :TipoSoggiorno AND NumeroCamere != :NumeroCamere AND TipoCamere != :TipoCamere AND Prezzo != :Prezzo ORDER BY Id DESC";
+                                $ris3    = DB::select($select3, ['id_proposta' => $check_proposta, 'TipoSoggiorno' => '', 'NumeroCamere' => 0, 'TipoCamere' => '', 'Prezzo' => 0]);
+
+
+                                foreach ($ris3 as $key => $rws3) {
+
+                                    DB::table('hospitality_richiesta')->insert([
+                                        'id_richiesta'  => $Id_richiesta,
+                                        'id_proposta'   => $IdProposta,
+                                        'TipoSoggiorno' => $rws3->TipoSoggiorno,
+                                        'NumeroCamere'  => $rws3->NumeroCamere,
+                                        'TipoCamere'    => $rws3->TipoCamere,
+                                        'NumAdulti'     => $rws3->NumAdulti,
+                                        'NumBambini'    => $rws3->NumBambini,
+                                        'EtaB'          => $rws3->EtaB,
+                                        'Prezzo'        => $rws3->Prezzo,
+                                    ]);
+
+
+
+                                }
+
+                            } // fine if se è già presente la conferma
+
+                        } // FINE AGGIORNAMWENTO DA PREVENTIVO A CONFERMA
+
+                    }
+
+                } // se la varibaile proposta non è vuota
+                $re_url = ''.(!empty(session('TEMPLATE'))?'/'.session('TEMPLATE'):'').'/' . session('DIRECTORY'). '/' . session('PARAM'). '/index?result=' . $risposta;
+                return redirect($re_url);
+ 
+    }
+
+
     /**
      * reg_payment
      *
