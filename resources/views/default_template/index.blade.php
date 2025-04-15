@@ -466,8 +466,8 @@
                               <input type="hidden" name="t" value="<?=$tipo?>">
                               <input type="hidden" name="idsito" value="<?=session('IDSITO')?>">
                               <input type="hidden" name="lang" value="<?=$Lingua?>">
-                              <input type="hidden" name="ip" value="<?=$_SERVER['REMOTE_ADDR']?>">
-                              <input type="hidden" name="agent" value="<?=$_SERVER['HTTP_USER_AGENT']?>">
+                              <input type="hidden" name="ip" value="{{ request()->ip() }}">
+                              <input type="hidden" name="agent" value="{{ request()->header('User-Agent') }}">
                               <input type="hidden" name="action" value="send_mail">
                               <input type="hidden" name="_token" value="{{csrf_token()}}">
                               @if($check_preno_esiste==0)
