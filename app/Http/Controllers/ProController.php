@@ -3368,7 +3368,7 @@ class ProController extends Controller
                         if ($vl['compreso'] == false) {
                             $servFac .= '<div class="servizio '.($vl['pre-selezionato'] == 1?'compreso open':'').'" servizio="' . $contserviziFac . '" id="PrezzoServizio'.$n.'_'.$vl['id'].'" '.$AttributoCalc.'>'."\r\n";
                             if ($vl['img'] != '') {
-                                $servFac .= '<div '.($vl['tipoCalcolo'] == 'A persona' ? 'data-bs-toggle="tooltip" title="'.$prezzoServizio.' € '.number_format($vl['prezzo'],2,',','.').'"' : '').' class="immago" style="' . (strstr($vl['img'], ".png") ? 'background-image:url(' . config('global.settings.BASE_URL_IMG') . 'uploads/icon_service/servizio.jpg)' : 'background-image:url(' . config('global.settings.BASE_URL_IMG') . 'uploads/' . $IdSito . '/' . $vl['img'] . ')') . '"></div>'."\r\n";
+                                $servFac .= '<div '.($vl['tipoCalcolo'] == 'A persona' ? 'data-bs-toggle="tooltip" title="'.$prezzoServizio.' € '.number_format($vl['prezzo'],2,',','.').'"' : '').' class="immago" style="' . (strstr($vl['img'], ".png") ? 'background-image:url(' . config('global.settings.BASE_URL_IMG') . 'uploads/icon_service/servizio.jpg)' : 'background-image:url(' . config('global.settings.BASE_URL_IMG') . 'uploads/' . $idsito . '/' . $vl['img'] . ')') . '"></div>'."\r\n";
                             } else {
                                 $servFac .= '<div '.($vl['tipoCalcolo'] == 'A persona' ? 'data-bs-toggle="tooltip" title="'.$prezzoServizio.' € '.number_format($vl['prezzo'],2,',','.').'"' : '').' class="immago" style="background-image:url(/img/servizio.jpg)"></div>'."\r\n";
                             }

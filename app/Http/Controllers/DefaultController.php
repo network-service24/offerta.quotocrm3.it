@@ -42,7 +42,8 @@ class DefaultController extends Controller
         $PrezzoPC           = $datiP->PrezzoP;
         $formato            = "%a";
         $ANotti             = $this->dateDiff($Arrivo,$Partenza,$formato);
-
+        $num_notti          = '';
+        $num_persone        = '';
 
         $q          = "SELECT * FROM hospitality_relazione_servizi_proposte WHERE id_richiesta = :id_richiesta AND id_proposta = :id_proposta";
         $r          = DB::select($q, ['id_richiesta' => $id_richiesta, 'id_proposta' => $id_proposta]);
@@ -211,7 +212,7 @@ class DefaultController extends Controller
                         $lista_servizi_aggiuntivi .= ' <td style="width:25%"  class="panel-body-warning border_td_white text-center">';
                         if ($campo->CalcoloPrezzo == 'A percentuale' && $campo->PercentualeServizio != '') {
                             $lista_servizi_aggiuntivi .= '   <div id="contenitore_switchery' . $campo->Id . '" class="nowrap">
-                                                            ' . ($campo->Obbligatorio == 1 ? $obbligatory . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : ($IdServizio[$campo->Id] == 1 ? '<small>(' . $IMPOSTO . ')</small>' . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : '<input type="checkbox" class="PrezzoServizio' . $n . '"  id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PercentualeServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '"  ' . ($IdServizio[$campo->Id] == 1 ? 'checked="checked"' : '') . '>'));
+                                                            ' . ($campo->Obbligatorio == 1 ? $obbligatory . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : (($IdServizio[$campo->Id] ?? null) == 1  ? '<small>(' . $IMPOSTO . ')</small>' . '<div class="text_explan_percent" style="display:none">' . $TEXT_EXPLANE . '</div>' : '<input type="checkbox" class="PrezzoServizio' . $n . '"  id="PrezzoServizio' . $n . '_' . $campo->Id . '" name="PrezzoServizio' . $n . '[' . $campo->Id . ']" value="' . $campo->PercentualeServizio . '#' . $campo->CalcoloPrezzo . '#' . $campo->Id . '"  ' . (($IdServizio[$campo->Id] ?? null) == 1 ? 'checked="checked"' : '') . '>'));
                         } else {
 
                             $lista_servizi_aggiuntivi .= '   <div id="contenitore_switchery' . $campo->Id . '" class="nowrap">
@@ -1422,7 +1423,7 @@ class DefaultController extends Controller
                                         <form  method="POST" id="form_cc" name="form_cc">
                                         <div class="form-g">
                                             <label for="cc-number" class="control-label">'.dizionario('N_CARTA').'<small class="text-muted text-light-blue">[<span class="cc-brand"></span>]</small></label>
-                                        <input name="nomecartacc" type="hidden" id="nomecartacc">
+                                            <input name="nomecartacc" type="hidden" id="nomecartacc">
                                             <input name="cc_number" id="cc-number" type="tel" class="input-lg form-control cc-number err_cc" autocomplete="cc-number" placeholder="•••• •••• •••• ••••" required>
                                         </div>
                                         <div class="form-g">
@@ -1604,7 +1605,7 @@ class DefaultController extends Controller
                                 <div class="clearfix"></div>';
                     if($EmailPayPal !=''){
                             $paypal .= ' <img src="/img/paypal.png" class="img-responsive" style="width:25%" />
-                                        <div class="ca20"></div>';
+                                        <div class="clearfix"></div>';
                             if($tot_cc_check == 0 && $tot_pag_check== 0){
                                 $paypal .= '<button type="submit" class="btn btn-lg" style="background-color:#f39c12!important;color:#FFFFFF!important;font-weight:normal!important"><i class="fa fa-paypal fa-lg"></i> '.dizionario('PAGA_PAYPAL').'</button>';
                             }elseif($tot_pag_check > 0 && $tot_cc_check == 0){
@@ -2275,8 +2276,8 @@ class DefaultController extends Controller
                                 <label for="ne_policy" class="text14">'.dizionario('ACCETTO_POLITICHE').' (<a href="#" onclick="scroll_to(\'Condizioni\', 70, 1000);">'.dizionario('LEGGI_POLITICHE').'</a>)</label>
                                 <div class="clear"></div> 
                                 <div id="politiche_ne" style="display:none">
-                                <div class="t14">'.dizionario('INFORMATIVA_PRIVACY').'</div>
-                            </div>
+                                    <div class="t14">'.dizionario('INFORMATIVA_PRIVACY').'</div>
+                                </div>
                                 <div class="clear"></div> ';
 
                                 $codTrans = $idsito.'_'.$id_richiesta.'_' . date('YmdHis');
@@ -2329,8 +2330,7 @@ class DefaultController extends Controller
                                 $nexi .= '<small class="text-red">API di riferimento Nexi, non è stata inserita!</small>';
                             }
                                     
-                    $nexi .= '</form>
-                            </div>';
+                    $nexi .= '</form>';
 
                         if($request->result!='' && base64_decode($request->result)=='nexi') {
 

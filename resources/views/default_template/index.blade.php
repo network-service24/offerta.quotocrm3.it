@@ -334,10 +334,10 @@
                         @endif
                      
 
-                        
                      </div>
                   </div>
                 </div>
+              </div>
                 <!-- FORM CARTA -->
             @endif
             @if (session('captcha'))
@@ -577,7 +577,8 @@
                             </div>
                         </div>
                     </div>
-                  </div>
+                </div>
+
                 <!-- form chat -->
                 <div class="thumbnail">
                    <?=$TopImage?>
