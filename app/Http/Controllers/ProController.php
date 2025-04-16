@@ -1509,7 +1509,7 @@ class ProController extends Controller
                                             });
                                         </script>';
                 $carte_credito .= '</div></div></div>';
-                $carte_credito .= ' <script src="{{asset(\'js/jquery.payment.min.js\')}}"></script>
+                $carte_credito .= ' <script src="/js/jquery.payment.min.js"></script>
                                     <style type="text/css" media="screen">
                                         .has-error input {
                                         border-width: 4px;
@@ -3092,12 +3092,13 @@ class ProController extends Controller
                                             <div class="prezzo"></div>
                                             <div class="arrivo">'.$Arrivo.'</div>
                                             <div class="partenza">'.$Partenza.'</div>
-                                            <div class="persone">'.dizionario('ADULTI').' '.$adulti.' - '.dizionario('BAMBINI').' '.$bambini.'</div>
+                                            <div class="persone">'.dizionario('ADULTI').' '.$adulti.' '.($bambini > 0? '- '.dizionario('BAMBINI').' '.$bambini:'').'</div>
+                                            '.($bambini > 0? '<div class="persone">'.dizionario('ETA').' '.$EtaB.' '.dizionario('ANNI').'</div>' : '').'
                                         </div>'."\r\n";
                 }
                 $camere .='     </div>
                                 <div class="col-12 col-md-6 p-5 content">
-                                    <h4 class="titolo_camera">'.$TitoloSoggiorno.'<br>'.$TitoloCamera.' <br>'.dizionario('PREZZO_CAMERA').'<i class="fa fa-euro"></i> '.$Prezzo.'</h4>
+                                    <h4 class="titolo_camera">'.$TitoloSoggiorno.'<br>'.$TitoloCamera.' <br>'.dizionario('PREZZO_CAMERA').' <i class="fa fa-euro"></i> '.$Prezzo.'</h4>
                                     <div style="clear:both;padding-bottom:10px"></div>
                                     <div class="testo_camera">'.(strlen(strip_tags($TestoCamera))>=200?substr(strip_tags($TestoCamera),0,200).'...':$TestoCamera).'</div>
                                     <div class="pulsante p2 " data-bs-toggle="modal" data-bs-target="#infoProposta'.$n.'_'.$x.'">'.$maggioriInformazioni.' <i class="fa-sharp fa-solid fa-info"></i></div>
@@ -3818,6 +3819,7 @@ class ProController extends Controller
                                                 'Partenza'                => $Partenza,
                                                 'adulti'                  => $adulti,
                                                 'bambini'                 => $bambini,
+                                                'eta'                     => $EtaB,
                                                 'infoHotel'               => $infoHotel,
                                                 'Eventi'                  => $Eventi,
                                                 'puntiInteresse'          => $puntiInteresse,

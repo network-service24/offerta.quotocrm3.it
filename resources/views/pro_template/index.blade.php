@@ -314,7 +314,7 @@
                             <span class="arrivo"><?=ucfirst(strtolower(dizionario('ARRIVO')))?>: <?=$Arrivo?></span> - <span class="partenza"><?=ucfirst(strtolower(dizionario('PARTENZA')))?>: <?=$Partenza?></span>
                         </div>
                         <div>
-                            <span class="adulti"><?=dizionario('ADULTI')?> <?=$adulti?></span> - <span class="Bambini"><?=dizionario('BAMBINI')?> <?=$bambini?></span> 
+                            <span class="adulti"><?=dizionario('ADULTI')?> <?=$adulti?></span> @if($bambini>0) -  <span class="Bambini"><?=dizionario('BAMBINI')?> <?=$bambini?></span> <span class="Eta"><?=dizionario('ETA')?>: <?=$eta?></span>@endif
                         </div>
                     <?}?>
                     <form id="form_msg" name="form_msg" method="post" action="/accetta_proposta_pro">
