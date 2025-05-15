@@ -181,7 +181,7 @@ class ProController extends Controller
                 }
                 if($value->CalcoloPrezzo == "A percentuale") {
            
-                    $totale_tmp_percentuale =  '';
+                    $totale_tmp[$value->Id.'_'.$id_proposta] =  '0.00';
                 }
                 if($value->CalcoloPrezzo == "Una tantum") {
                         

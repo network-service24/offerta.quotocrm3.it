@@ -1073,7 +1073,7 @@ class Controller extends BaseController
                     
                     if($check == 1){
                         $new_explane_servizio = '';
-                        $new_totale_servizio = (($prezzoServizio*$percentualeServizio)/100);
+                        $new_totale_servizio = (($totaleProposta*$percentualeServizio)/100);
                         $new_totale_servizi = ($totaleServizi+$new_totale_servizio);
                         $new_totale_proposta = ($totaleProposta+$new_totale_servizio);
     
@@ -1085,7 +1085,7 @@ class Controller extends BaseController
                     }
                     if($check == 0){
                         $new_explane_servizio = '';
-                        $new_totale_servizio = (($prezzoServizio*$percentualeServizio)/100);
+                        $new_totale_servizio = (($totaleProposta*$percentualeServizio)/100);
                         $new_totale_servizi = ($totaleServizi-$new_totale_servizio);
                         $new_totale_proposta = ($totaleProposta-$new_totale_servizio);
     
