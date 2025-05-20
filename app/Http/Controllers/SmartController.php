@@ -1662,6 +1662,7 @@ class SmartController extends Controller
             $formato            = "%a";
             $ANotti             = $this->dateDiff($Arrivo,$Partenza,$formato);
 
+            $check_preventivo_BOT    = $this->check_preventivo_BOT($id_richiesta,$idsito);
 
         $q          = "SELECT * FROM hospitality_relazione_servizi_proposte WHERE id_richiesta = :id_richiesta AND id_proposta = :id_proposta";
         $r          = DB::select($q, ['id_richiesta' => $id_richiesta, 'id_proposta' => $id_proposta]);
@@ -1822,7 +1823,7 @@ class SmartController extends Controller
                         $PrezzoServizio = ($campo->PrezzoServizio!=0?'&nbsp;&nbsp;'.number_format(($campo->PrezzoServizio*$num_notti*$num_persone),2,',','.'):'<small class="text-green">Gratis</small>');
                       break;
                     }
-            
+     
               if($DataRichiestaCheck >= config('global.settings.DATA_SERVIZI_VISIBILI')){
                 if ($visibile == 1) {           
                       $lista_servizi_aggiuntivi .=' <div class="m m-x-12 rigaservizi">
@@ -1845,7 +1846,7 @@ class SmartController extends Controller
             
                                                         </div>
                                                         <div class="ca"></div>';
-            
+                          
                       $modali_servizi_aggiuntivi .=' <script>
                                                             <!-- funzione per eliminare nowrap class-->
                                                             checkScreenDimension("'.$campo->Id.'");
@@ -2046,6 +2047,7 @@ class SmartController extends Controller
                                                           </div> ';
                       }
                     }else{
+    
                       $lista_servizi_aggiuntivi .=' <div class="m m-x-12 rigaservizi">
                                       <div class="m m-x-2 m-s-12 m-x-tl boxservizi titolo"><strong><span class="nowrap">'
                                       .($campo->Icona!=''?'<img id="TD'.$campo->Id.'" src="'.config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$campo->Icona.'" class="iconaservizi">&nbsp;':'').$Servizio.'</span></strong></div>
@@ -2066,7 +2068,7 @@ class SmartController extends Controller
       
                                           </div>
                                           <div class="ca"></div>';
-      
+                      
                       $modali_servizi_aggiuntivi .=' <script>
                                               <!-- funzione per eliminare nowrap class-->
                                               checkScreenDimension("'.$campo->Id.'");
@@ -3353,7 +3355,7 @@ class SmartController extends Controller
                                             <td class="m-x-3 no_border m-x-tr">'.$PrezzoServizio.'</td>
 
                                         </tr>';
-
+                
 
 
                 }
@@ -3446,7 +3448,7 @@ class SmartController extends Controller
                             $PrezzoServizio = ($campo->PrezzoServizio!=0?'<i class="fal fa-euro-sign"></i>&nbsp;&nbsp;'.number_format(($campo->PrezzoServizio*$num_notti*$num_persone),2,',','.'):'<small class="text-green">Gratis</small>');
                         break;
                     }
-
+   
                     $SERVIZIAGGIUNTIVI .='<tr class="riga">
                                             <td class="m-x-3 no_border m-x-tl"><img src="'.config('global.settings.BASE_URL_IMG').'uploads/'.$idsito.'/'.$campo->Icona.'" class="iconaDimension pad-left"> &nbsp;&nbsp;'.$rec->Servizio.'</td>
                                             <td class="m-x-3 no_border m-x-tc">'.($rec->Descrizione!=''?'<a href="javascript:;" data-toggle="tooltip" title="'.(strlen($rec->Descrizione)<=300?stripslashes(strip_tags($rec->Descrizione)):substr(stripslashes(strip_tags($rec->Descrizione)),0,300).'...').'"><i class="fa fa-info-circle text-green" aria-hidden="true"></i></a>':'').' </td>
@@ -3454,7 +3456,7 @@ class SmartController extends Controller
                                             <td class="m-x-3 no_border m-x-tr">'.$PrezzoServizio.'</td>
 
                                         </tr>';
-
+  
 
 
                 }

@@ -258,7 +258,9 @@
     <div class="container">
 
             @if($checkServiziInclusi > 0)
-                $servInc;
+                @if($check_preventivo_BOT == false)
+                    <?php echo $servInc;?>
+               @endif
             @endif
         
         <?php $ck_serv = $check_controllo_servizi; ?>

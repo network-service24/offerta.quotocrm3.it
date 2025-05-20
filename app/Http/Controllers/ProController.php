@@ -2292,6 +2292,8 @@ class ProController extends Controller
             $row_x = $res_x[0];
             $Pagamento_nx   = $row_x->Pagamento;
             $Descrizione_nx = $row_x->Descrizione;
+            $nexi_txt = '';
+            $nexi_value = '';
 
             $ACCONTO = dizionario('ACCONTO');
 
@@ -3860,6 +3862,7 @@ class ProController extends Controller
                                                 'fraseChat'               => $fraseChat,
                                                 'gallery'                 => $gallery,
                                                 'Nproposte'               => $Nproposte,
+                                                'check_preventivo_BOT'    => $this->check_preventivo_BOT($id_richiesta,$idsito)
 
                                             ]
                                         );

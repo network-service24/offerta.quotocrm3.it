@@ -3118,7 +3118,26 @@ class Controller extends BaseController
     }
 
 
-
+   public function check_preventivo_BOT($id,$idsito)
+    {
+        $select = "SELECT 
+                        * 
+                    FROM 
+                        hospitality_guest as g
+                    WHERE  
+                        g.Id = :Id
+                    AND
+                        g.idsito = :idsito
+                    AND 
+                        g.CompilatoInAutomatico = 1";
+        $result = DB::select($select, ['idsito' => $idsito, 'Id' => $id]);
+ 
+        if (sizeof($result) > 0) {
+            return true;
+        }else{
+            return false;
+        }
+    }
 
 
 
