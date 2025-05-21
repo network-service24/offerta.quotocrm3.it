@@ -1055,7 +1055,7 @@ class Controller extends BaseController
                         $new_totale_proposta = ($totaleProposta-$new_totale_servizio);
                         if($percentualeCaparra != ''){
                             $new_totale_caparra_ = ($new_totale_proposta*$percentualeCaparra/100);
-                            $new_totale_caparra = ($new_totale_caparra_-$new_totale_caparra);
+                            $new_totale_caparra = (floatval($new_totale_caparra_)-floatval($new_totale_caparra));
                         }else{
                             $new_totale_caparra = '';
                         }
